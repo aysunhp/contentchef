@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cream text-text-primary-light transition-colors duration-300;
+  }
+
+  .dark body {
+    @apply bg-obsidian text-text-primary-dark;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-3xl p-4 transition-all duration-200
+           bg-surface-light shadow-card-light
+           dark:bg-surface-dark dark:shadow-card-dark;
+  }
+
+  .card:hover {
+    @apply rotate-1 scale-[1.02];
+  }
+}
+
+@layer utilities {
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+}

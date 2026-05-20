@@ -1,0 +1,81 @@
+You are an expert Senior Full-Stack Developer and UI/UX Architect. Your task is to write a production-ready, fully functional codebase for a Hackathon project named "ContentChef" — a highly aesthetic Micro-SaaS platform tailored for content creators (specifically optimized for workflows like an English Teacher).
+
+The project must be structured into two distinct root directories: `client/` (Frontend) and `server/` (Backend).
+
+---
+
+## 1. Project Architecture & Directory Structure
+
+Generate the system following this strict structural layout:
+
+ContentChef/
+├── client/                 # Frontend (React + Tailwind CSS)
+│   ├── public/
+│   ├── src/
+│   │   ├── components/     # UI Components (Sidebar, Calendar, KitchenEditor, AIConsole)
+│   │   ├── context/        # ThemeContext (Light/Dark), Auth/PostContext
+│   │   ├── hooks/          # UseDragAndDrop, useFetch
+│   │   ├── styles/         # Tailwind directives & custom CSS
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── tailwind.config.js
+└── server/                 # Backend (Node.js + Express)
+    ├── src/
+    │   ├── config/         # Database and API Configurations
+    │   ├── controllers/    # AI Generator, Post Management controllers
+    │   ├── models/         # Mock database structures / schemas
+    │   ├── routes/         # API endpoints (/api/generate-plan, /api/posts)
+    │   └── app.js
+    ├── package.json
+    └── .env
+
+---
+
+## 2. UI/UX Design System & Theme Tokens
+
+The application must support an explicit Light Mode and a custom premium Dark Mode. Implement a dynamic theme switcher.
+
+### Theme Color Palettes
+| Token | Light Mode (Pastel Cream) | Dark Mode (Premium Obsidian) |
+| :--- | :--- | :--- |
+| **Background** | `#FDF6E3` (Cream) or `#F9F9F9` | `#0F0F12` (Deep Black/Charcoal) |
+| **Surface/Cards**| `#FFFFFF` (Pure White) | `#18181C` (Subtle Dark Slate) |
+| **Primary Accent**| `#A7C7E7` (Pastel Blue) / `#B5EAD7` | `#C3B1E1` (Pastel Lavender) / `#98FFD9` |
+| **Text Primary** | `#333333` (Soft Dark Charcoal) | `#F5F5F7` (Off-white / Silk) |
+| **Text Secondary**| `#7F8C8D` (Muted Grey) | `#9A9A87` / `#A1A1AA` (Muted Slate) |
+| **Shadows** | `0 4px 20px rgba(0,0,0,0.05)` | `0 4px 25px rgba(0,0,0,0.4)` |
+
+### UI Design Inspiration Cues:
+* **Layout Structure:** Split-view design. Fixed micro-sidebar on the absolute left inspired by modern layout utilities (Icons: Calendar, Media, Messages, Charts, Settings, User Profile bubble).
+* **Card Interactions:** Cards in the calendar must have soft rounded borders (`rounded-2xl` or `3xl`). When dragged or hovered, apply a subtle artistic rotation (`hover:rotate-2 transition-transform`).
+* **SaaS Utility Overlays:** Include state indicators on cards like "Review", "Legal Approval", or "Best Time to Post" tag indicators, along with a floating AI generation interaction bar.
+
+---
+
+## 3. Core Frontend Requirements (React + Tailwind)
+
+### A. The Layout Components
+1. **Left Sidebar:** Ultra-minimalist navigation dock containing clean icons (Lucide icons preferred) with the profile avatar stationed at the bottom.
+2. **Main Application Board (Split Screen):**
+   * **Left Side (The Strategy Board / Calendar):** A comprehensive grid displaying months/weeks. Dates contain interactive task blocks. Users can drag and drop items between dates using a lightweight drag library (e.g., `@hello-pangea/dnd` or `dnd-kit`). Include status badges on cards.
+   * **Right Side (The Content Kitchen / Workspace):** Contextual side panel that slides or fades smoothly into view when a card is selected. Divided into a top section ("Visual Concept / AI Moodboard Pointer" + "Dashed Upload Target Block") and a bottom section ("Script & Caption Area").
+
+### B. Core Features & Modals
+* **Dynamic AI Prompt Insertion Bar:** Located within the calendar dashboard, allowing users to type commands like *"Pull last month's performance and generate updates"*.
+* **Interactive Context Menus:** A context action menu matching the 'Create' utility dropdown: "New Post", "New Note", "Instagram Planner", "TikTok Planner".
+
+---
+
+## 4. Core Backend Requirements (Node.js + Express)
+
+Develop an adaptive backend engine handling generation requests and payload transfers.
+
+### A. API Endpoints Sheet
+* `POST /api/generate-plan`: Receives user setup prompts (e.g., *"I am an English teacher..."*). Calls OpenAI API using structured system rules and returns a fully formed JSON array parsing out calendar slots.
+* `POST /api/generate-moodboard`: Targets OpenAI DALL-E 3 API to produce a stylistic, minimalist pastel prompt illustration representing the post theme.
+* `GET/POST/PUT /api/posts`: Manages local content card data persistence, maintaining state flags (`draft`, `review`, `published`).
+
+### B. OpenAI System Prompt Blueprint (To embed in Controller)
+```text
+"You are an expert social media strategist and content producer. Generate a structured JSON response array for a content calendar plan. Each item inside the array must contain: { id, date, topic, category, formatType ('video' or 'image'), visualInstructions, scriptOrCaption: { hook, body, hashtags: [] } }. Keep the tone customized to the target audience defined by the user."
