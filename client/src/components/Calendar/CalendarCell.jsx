@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import CalendarCard from './CalendarCard';
 
 const CalendarCell = forwardRef(function CalendarCell(
-  { date, isCurrentMonth, isToday, isDragOver, posts, onSelectPost, onNewPost, placeholder, ...props },
+  { date, isCurrentMonth, isToday, isDragOver, posts, onSelectPost, onNewPost, onContextMenu, placeholder, ...props },
   ref,
 ) {
   const dateStr = date.toISOString().split('T')[0];
@@ -46,6 +46,7 @@ const CalendarCell = forwardRef(function CalendarCell(
             post={post}
             index={index}
             onClick={() => onSelectPost(post)}
+            onContextMenu={onContextMenu}
           />
         ))}
         {placeholder}

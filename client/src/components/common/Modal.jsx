@@ -14,7 +14,7 @@ export default function Modal({ title, onClose, children }) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-3xl bg-surface-light p-6 shadow-card-dark dark:bg-surface-dark"
+        className="animate-fade-in w-full max-w-md rounded-3xl bg-surface-light p-6 shadow-card-dark dark:bg-surface-dark"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">

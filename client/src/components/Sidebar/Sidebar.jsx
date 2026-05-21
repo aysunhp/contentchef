@@ -8,6 +8,7 @@ import {
   ChefHat,
 } from 'lucide-react';
 import ThemeToggle from '../common/ThemeToggle';
+import CreateMenu from '../common/CreateMenu';
 
 const NAV_ITEMS = [
   { id: 'calendar', icon: CalendarDays, label: 'Calendar' },
@@ -63,6 +64,7 @@ export default function Sidebar() {
 
       {/* Bottom Section */}
       <div className="flex flex-col items-center gap-3">
+        <CreateMenu />
         <ThemeToggle />
         {/* Profile Avatar */}
         <button className="h-9 w-9 overflow-hidden rounded-full bg-gradient-to-br from-primary-light to-accent-light ring-2 ring-transparent transition-all hover:ring-primary-light/50 dark:from-primary-dark dark:to-accent-dark dark:hover:ring-primary-dark/50">

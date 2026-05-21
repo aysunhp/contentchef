@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X, Upload, Sparkles, Video, ImageIcon, Hash, Check, Loader2, Trash2 } from 'lucide-react';
+import { X, Upload, Sparkles, Video, ImageIcon, Hash, Check, Loader2, Trash2, Wand2 } from 'lucide-react';
 import { usePosts } from '../../context/PostContext';
-import { postService } from '../../services/api';
+import { postService, aiService } from '../../services/api';
 import { useFetch } from '../../hooks/useFetch';
 import { STATUS_COLORS, FORMAT_LABELS } from '../../constants/theme';
 
@@ -12,6 +12,8 @@ export default function ContentKitchen() {
   const { isLoading, execute } = useFetch();
   const [draft, setDraft] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [moodboard, setMoodboard] = useState(null);
+  const [moodLoading, setMoodLoading] = useState(false);
 
   useEffect(() => {
     if (selectedPost) {
@@ -22,8 +24,19 @@ export default function ContentKitchen() {
         hashtags: (selectedPost.scriptOrCaption?.hashtags || []).join(' '),
       });
       setSaved(false);
+      setMoodboard(null);
     }
   }, [selectedPost?.id]);
+
+  const handleGenerateMoodboard = async () => {
+    setMoodLoading(true);
+    try {
+      const result = await aiService.generateMoodboard(selectedPost.topic);
+      if (result?.data) setMoodboard(result.data);
+    } finally {
+      setMoodLoading(false);
+    }
+  };
 
   if (!selectedPost || !draft) {
     return (
@@ -71,7 +84,7 @@ export default function ContentKitchen() {
   const statusStyle = STATUS_COLORS[draft.status] || STATUS_COLORS.draft;
 
   return (
-    <section className="flex w-[380px] flex-col overflow-hidden border-l border-gray-200/60 bg-surface-light/50 dark:border-white/5 dark:bg-surface-dark/50">
+    <section className="animate-slide-in flex w-[380px] flex-col overflow-hidden border-l border-gray-200/60 bg-surface-light/50 dark:border-white/5 dark:bg-surface-dark/50">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-gray-200/60 px-5 py-4 dark:border-white/5">
         <div>
@@ -136,16 +149,41 @@ export default function ContentKitchen() {
           {selectedPost.topic}
         </h3>
 
-        {/* Visual Concept Upload Zone */}
+        {/* Visual Concept / AI Moodboard */}
         <div className="mb-5">
-          <label className="label-style">Visual Concept</label>
-          <div className="flex h-32 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300/60 bg-gray-50 transition-colors hover:border-primary-light/50 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-primary-dark/50">
-            <div className="flex flex-col items-center gap-2 text-text-secondary-light dark:text-text-secondary-dark">
-              <Upload size={18} />
-              <span className="text-[11px]">Drop visual or generate with AI</span>
-            </div>
+          <div className="mb-2 flex items-center justify-between">
+            <label className="label-style">Visual Concept</label>
+            <button
+              onClick={handleGenerateMoodboard}
+              disabled={moodLoading}
+              className="flex items-center gap-1 rounded-lg bg-primary-light/10 px-2 py-1 text-[10px] font-medium text-primary-light transition-colors hover:bg-primary-light/20 disabled:opacity-50 dark:bg-primary-dark/10 dark:text-primary-dark dark:hover:bg-primary-dark/20"
+            >
+              {moodLoading ? <Loader2 size={10} className="animate-spin" /> : <Wand2 size={10} />}
+              AI Moodboard
+            </button>
           </div>
-          {selectedPost.visualInstructions && (
+
+          {moodboard ? (
+            <div className="overflow-hidden rounded-2xl">
+              <img
+                src={moodboard.imageUrl}
+                alt={moodboard.topic}
+                className="h-36 w-full object-cover"
+              />
+              <p className="mt-1 text-[10px] italic text-text-secondary-light dark:text-text-secondary-dark">
+                Style: {moodboard.style}
+              </p>
+            </div>
+          ) : (
+            <div className="flex h-32 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300/60 bg-gray-50 transition-colors hover:border-primary-light/50 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-primary-dark/50">
+              <div className="flex flex-col items-center gap-2 text-text-secondary-light dark:text-text-secondary-dark">
+                <Upload size={18} />
+                <span className="text-[11px]">Drop visual or click AI Moodboard</span>
+              </div>
+            </div>
+          )}
+
+          {selectedPost.visualInstructions && !moodboard && (
             <p className="mt-2 text-[11px] italic text-text-secondary-light dark:text-text-secondary-dark">
               {selectedPost.visualInstructions}
             </p>
