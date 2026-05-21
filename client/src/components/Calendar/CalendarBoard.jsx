@@ -4,6 +4,7 @@ import { usePosts } from '../../context/PostContext';
 import { postService } from '../../services/api';
 import CalendarGrid from './CalendarGrid';
 import AIPromptBar from '../AI/AIPromptBar';
+import NewPostModal from '../common/NewPostModal';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -16,6 +17,7 @@ export default function CalendarBoard() {
   const { posts, setPosts, selectPost, isLoading } = usePosts();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showAIBar, setShowAIBar] = useState(false);
+  const [newPostDate, setNewPostDate] = useState(null);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -87,6 +89,13 @@ export default function CalendarBoard() {
 
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setNewPostDate(new Date().toISOString().split('T')[0])}
+            className="flex items-center gap-1.5 rounded-xl bg-gray-100 px-3 py-2 text-xs font-medium text-text-secondary-light transition-all hover:bg-gray-200 dark:bg-white/5 dark:text-text-secondary-dark dark:hover:bg-white/10"
+          >
+            <Plus size={14} />
+            New Post
+          </button>
+          <button
             onClick={() => setShowAIBar((prev) => !prev)}
             className="flex items-center gap-1.5 rounded-xl bg-primary-light/10 px-3 py-2 text-xs font-medium text-primary-light transition-all hover:bg-primary-light/20 dark:bg-primary-dark/10 dark:text-primary-dark dark:hover:bg-primary-dark/20"
           >
@@ -116,8 +125,16 @@ export default function CalendarBoard() {
         days={days}
         posts={posts}
         onSelectPost={selectPost}
+        onNewPost={(date) => setNewPostDate(date)}
         isLoading={isLoading}
       />
+
+      {newPostDate && (
+        <NewPostModal
+          defaultDate={newPostDate}
+          onClose={() => setNewPostDate(null)}
+        />
+      )}
     </section>
   );
 }

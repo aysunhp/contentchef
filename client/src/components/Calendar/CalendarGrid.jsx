@@ -6,7 +6,7 @@ import CalendarCell from './CalendarCell';
 
 const formatDate = (date) => date.toISOString().split('T')[0];
 
-export default function CalendarGrid({ days, posts, onSelectPost, isLoading }) {
+export default function CalendarGrid({ days, posts, onSelectPost, onNewPost, isLoading }) {
   const { updatePost } = usePosts();
 
   const handleReorder = async (updatedPost) => {
@@ -46,6 +46,7 @@ export default function CalendarGrid({ days, posts, onSelectPost, isLoading }) {
                   isDragOver={snapshot.isDraggingOver}
                   posts={getPostsForDate(date)}
                   onSelectPost={onSelectPost}
+                  onNewPost={onNewPost}
                   placeholder={provided.placeholder}
                 />
               )}

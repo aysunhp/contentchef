@@ -1,11 +1,31 @@
-import { X, Upload, Sparkles, Video, ImageIcon, Hash } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Upload, Sparkles, Video, ImageIcon, Hash, Check, Loader2, Trash2 } from 'lucide-react';
 import { usePosts } from '../../context/PostContext';
+import { postService } from '../../services/api';
+import { useFetch } from '../../hooks/useFetch';
 import { STATUS_COLORS, FORMAT_LABELS } from '../../constants/theme';
 
-export default function ContentKitchen() {
-  const { selectedPost, selectPost } = usePosts();
+const STATUSES = ['draft', 'review', 'published'];
 
-  if (!selectedPost) {
+export default function ContentKitchen() {
+  const { selectedPost, selectPost, updatePost, deletePost } = usePosts();
+  const { isLoading, execute } = useFetch();
+  const [draft, setDraft] = useState(null);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (selectedPost) {
+      setDraft({
+        status: selectedPost.status,
+        hook: selectedPost.scriptOrCaption?.hook || '',
+        body: selectedPost.scriptOrCaption?.body || '',
+        hashtags: (selectedPost.scriptOrCaption?.hashtags || []).join(' '),
+      });
+      setSaved(false);
+    }
+  }, [selectedPost?.id]);
+
+  if (!selectedPost || !draft) {
     return (
       <section className="hidden w-[380px] flex-col items-center justify-center bg-surface-light/50 dark:bg-surface-dark/50 lg:flex">
         <div className="flex flex-col items-center gap-3 text-center">
@@ -23,12 +43,36 @@ export default function ContentKitchen() {
     );
   }
 
-  const statusStyle = STATUS_COLORS[selectedPost.status] || STATUS_COLORS.draft;
-  const caption = selectedPost.scriptOrCaption || {};
+  const set = (field) => (e) => setDraft((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const handleSave = async () => {
+    const updates = {
+      status: draft.status,
+      scriptOrCaption: {
+        hook: draft.hook,
+        body: draft.body,
+        hashtags: draft.hashtags.split(/\s+/).filter((t) => t.startsWith('#')),
+      },
+    };
+    const result = await execute(() => postService.update(selectedPost.id, updates));
+    if (result?.data) {
+      updatePost(result.data);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Delete this post?')) return;
+    await execute(() => postService.delete(selectedPost.id));
+    deletePost(selectedPost.id);
+  };
+
+  const statusStyle = STATUS_COLORS[draft.status] || STATUS_COLORS.draft;
 
   return (
     <section className="flex w-[380px] flex-col overflow-hidden border-l border-gray-200/60 bg-surface-light/50 dark:border-white/5 dark:bg-surface-dark/50">
-      {/* Kitchen Header */}
+      {/* Header */}
       <header className="flex items-center justify-between border-b border-gray-200/60 px-5 py-4 dark:border-white/5">
         <div>
           <h2 className="text-sm font-bold text-text-primary-light dark:text-text-primary-dark">
@@ -38,22 +82,46 @@ export default function ContentKitchen() {
             {selectedPost.date}
           </p>
         </div>
-        <button
-          onClick={() => selectPost(null)}
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-text-secondary-light transition-colors hover:bg-gray-100 dark:text-text-secondary-dark dark:hover:bg-white/5"
-        >
-          <X size={16} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleDelete}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+          >
+            <Trash2 size={14} />
+          </button>
+          <button
+            onClick={() => selectPost(null)}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-text-secondary-light transition-colors hover:bg-gray-100 dark:text-text-secondary-dark dark:hover:bg-white/5"
+          >
+            <X size={16} />
+          </button>
+        </div>
       </header>
 
       <div className="scrollbar-hidden flex-1 overflow-y-auto px-5 py-4">
-        {/* Status & Format Badges */}
+        {/* Status Selector */}
+        <div className="mb-4">
+          <label className="label-style">Status</label>
+          <div className="flex gap-1.5">
+            {STATUSES.map((s) => {
+              const st = STATUS_COLORS[s];
+              return (
+                <button
+                  key={s}
+                  onClick={() => setDraft((prev) => ({ ...prev, status: s }))}
+                  className={`rounded-lg px-3 py-1 text-[10px] font-semibold uppercase transition-all ${st.bg} ${st.text} ${
+                    draft.status === s ? 'ring-2 ring-offset-1 ring-current' : 'opacity-50 hover:opacity-80'
+                  }`}
+                >
+                  {s}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Format & Category */}
         <div className="mb-4 flex items-center gap-2">
-          <span
-            className={`rounded-lg px-2 py-1 text-[10px] font-semibold uppercase ${statusStyle.bg} ${statusStyle.text}`}
-          >
-            {selectedPost.status}
-          </span>
           <span className="flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-[10px] font-medium text-text-secondary-light dark:bg-white/5 dark:text-text-secondary-dark">
             {selectedPost.formatType === 'video' ? <Video size={10} /> : <ImageIcon size={10} />}
             {FORMAT_LABELS[selectedPost.formatType]}
@@ -64,18 +132,16 @@ export default function ContentKitchen() {
         </div>
 
         {/* Topic */}
-        <h3 className="mb-4 text-base font-bold text-text-primary-light dark:text-text-primary-dark">
+        <h3 className="mb-5 text-base font-bold text-text-primary-light dark:text-text-primary-dark">
           {selectedPost.topic}
         </h3>
 
-        {/* Visual Moodboard Section */}
+        {/* Visual Concept Upload Zone */}
         <div className="mb-5">
-          <label className="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
-            Visual Concept
-          </label>
-          <div className="flex h-36 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300/60 bg-gray-50 transition-colors hover:border-primary-light/50 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-primary-dark/50">
+          <label className="label-style">Visual Concept</label>
+          <div className="flex h-32 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300/60 bg-gray-50 transition-colors hover:border-primary-light/50 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-primary-dark/50">
             <div className="flex flex-col items-center gap-2 text-text-secondary-light dark:text-text-secondary-dark">
-              <Upload size={20} />
+              <Upload size={18} />
               <span className="text-[11px]">Drop visual or generate with AI</span>
             </div>
           </div>
@@ -86,45 +152,61 @@ export default function ContentKitchen() {
           )}
         </div>
 
-        {/* Script & Caption */}
+        {/* Editable Script */}
         <div className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
-              Hook
-            </label>
-            <div className="rounded-xl bg-gray-50 p-3 text-xs leading-relaxed text-text-primary-light dark:bg-white/[0.03] dark:text-text-primary-dark">
-              {caption.hook || 'No hook defined'}
-            </div>
+            <label className="label-style">Hook</label>
+            <input
+              type="text"
+              value={draft.hook}
+              onChange={set('hook')}
+              className="input-style"
+              placeholder="Opening line..."
+            />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
-              Body / Caption
-            </label>
-            <div className="rounded-xl bg-gray-50 p-3 text-xs leading-relaxed text-text-primary-light dark:bg-white/[0.03] dark:text-text-primary-dark">
-              {caption.body || 'No caption defined'}
-            </div>
+            <label className="label-style">Body / Caption</label>
+            <textarea
+              value={draft.body}
+              onChange={set('body')}
+              rows={4}
+              className="input-style resize-none"
+              placeholder="Main caption or script body..."
+            />
           </div>
 
-          {caption.hashtags?.length > 0 && (
-            <div>
-              <label className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
-                <Hash size={10} /> Hashtags
-              </label>
-              <div className="flex flex-wrap gap-1.5">
-                {caption.hashtags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-lg bg-primary-light/10 px-2 py-0.5 text-[10px] font-medium text-primary-light dark:bg-primary-dark/10 dark:text-primary-dark"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+          <div>
+            <label className="label-style flex items-center gap-1">
+              <Hash size={10} /> Hashtags
+            </label>
+            <input
+              type="text"
+              value={draft.hashtags}
+              onChange={set('hashtags')}
+              className="input-style"
+              placeholder="#EnglishTeacher #LearnEnglish"
+            />
+          </div>
         </div>
       </div>
+
+      {/* Save Footer */}
+      <footer className="border-t border-gray-200/60 px-5 py-3 dark:border-white/5">
+        <button
+          onClick={handleSave}
+          disabled={isLoading}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-light py-2 text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 dark:bg-primary-dark dark:text-obsidian"
+        >
+          {isLoading ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : saved ? (
+            <><Check size={14} /> Saved!</>
+          ) : (
+            'Save Changes'
+          )}
+        </button>
+      </footer>
     </section>
   );
 }
