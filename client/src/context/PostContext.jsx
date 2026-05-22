@@ -54,10 +54,7 @@ export function PostProvider({ children }) {
       addPosts: (posts) => dispatch({ type: ACTIONS.ADD_POSTS, payload: posts }),
       updatePost: (post) => dispatch({ type: ACTIONS.UPDATE_POST, payload: post }),
       deletePost: (id) => dispatch({ type: ACTIONS.DELETE_POST, payload: id }),
-      selectPost: (post) => {
-        console.log('[PostContext] selectPost called with:', post);
-        dispatch({ type: ACTIONS.SELECT_POST, payload: post });
-      },
+      selectPost: (post) => dispatch({ type: ACTIONS.SELECT_POST, payload: post }),
       setLoading: (val) => dispatch({ type: ACTIONS.SET_LOADING, payload: val }),
     }),
     [],

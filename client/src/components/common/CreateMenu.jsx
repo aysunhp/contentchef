@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
-import { Plus, FileText, StickyNote, Instagram, Music2 } from 'lucide-react';
+import { useState, useRef, useEffect } from "react";
+import { Plus, FileText, StickyNote, Instagram, Music2 } from "lucide-react";
 
 const MENU_ITEMS = [
-  { label: 'New Post', icon: FileText, type: 'post' },
-  { label: 'New Note', icon: StickyNote, type: 'note' },
-  { label: 'Instagram Planner', icon: Instagram, type: 'instagram' },
-  { label: 'TikTok Planner', icon: Music2, type: 'tiktok' },
+  { label: "New Post", icon: FileText, type: "post" },
+  { label: "New Note", icon: StickyNote, type: "note" },
+  { label: "Instagram Planner", icon: Instagram, type: "instagram" },
+  { label: "TikTok Planner", icon: Music2, type: "tiktok" },
 ];
 
 export default function CreateMenu({ onSelect }) {
@@ -16,8 +16,8 @@ export default function CreateMenu({ onSelect }) {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
-    window.addEventListener('mousedown', handler);
-    return () => window.removeEventListener('mousedown', handler);
+    window.addEventListener("mousedown", handler);
+    return () => window.removeEventListener("mousedown", handler);
   }, []);
 
   return (
@@ -27,11 +27,14 @@ export default function CreateMenu({ onSelect }) {
         title="Create"
         className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 ${
           open
-            ? 'bg-primary-light/20 text-primary-light dark:bg-primary-dark/20 dark:text-primary-dark'
-            : 'text-text-secondary-light hover:bg-gray-100 dark:text-text-secondary-dark dark:hover:bg-white/5'
+            ? "border border-pastel-violet-border bg-pastel-violet text-pastel-violet-text"
+            : "text-text-secondary-light hover:bg-gray-100 dark:text-text-secondary-dark dark:hover:bg-white/5"
         }`}
       >
-        <Plus size={18} className={`transition-transform duration-200 ${open ? 'rotate-45' : ''}`} />
+        <Plus
+          size={18}
+          className={`transition-transform duration-200 ${open ? "rotate-45" : ""}`}
+        />
       </button>
 
       {open && (
@@ -42,10 +45,16 @@ export default function CreateMenu({ onSelect }) {
           {MENU_ITEMS.map(({ label, icon: Icon, type }) => (
             <button
               key={type}
-              onClick={() => { onSelect?.(type); setOpen(false); }}
+              onClick={() => {
+                onSelect?.(type);
+                setOpen(false);
+              }}
               className="flex w-full items-center gap-3 px-4 py-2.5 text-xs text-text-primary-light transition-colors hover:bg-gray-50 dark:text-text-primary-dark dark:hover:bg-white/5"
             >
-              <Icon size={14} className="text-text-secondary-light dark:text-text-secondary-dark" />
+              <Icon
+                size={14}
+                className="text-text-secondary-light dark:text-text-secondary-dark"
+              />
               {label}
             </button>
           ))}

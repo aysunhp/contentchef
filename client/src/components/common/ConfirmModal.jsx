@@ -1,5 +1,5 @@
-import { AlertTriangle, X } from 'lucide-react';
-import Modal from './Modal';
+import { AlertTriangle, X } from "lucide-react";
+import Modal from "./Modal";
 
 export default function ConfirmModal({ title, message, onConfirm, onClose }) {
   return (
@@ -8,15 +8,15 @@ export default function ConfirmModal({ title, message, onConfirm, onClose }) {
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
           <AlertTriangle size={32} className="text-red-500 dark:text-red-400" />
         </div>
-        
+
         <h3 className="mb-2 text-lg font-bold text-text-primary-light dark:text-text-primary-dark">
           {title}
         </h3>
-        
+
         <p className="mb-6 max-w-[280px] text-sm text-text-secondary-light dark:text-text-secondary-dark">
           {message}
         </p>
-        
+
         <div className="flex w-full gap-3">
           <button
             onClick={onClose}

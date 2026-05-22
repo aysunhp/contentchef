@@ -1,25 +1,42 @@
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Sparkles } from 'lucide-react';
-import { usePosts } from '../../context/PostContext';
-import { postService } from '../../services/api';
-import CalendarGrid from './CalendarGrid';
-import AIPromptBar from '../AI/AIPromptBar';
-import NewPostModal from '../common/NewPostModal';
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Plus, Sparkles } from "lucide-react";
+import { usePosts } from "../../context/PostContext";
+import { postService } from "../../services/api";
+import CalendarGrid from "./CalendarGrid";
+import AIPromptBar from "../AI/AIPromptBar";
+import NewPostModal from "../common/NewPostModal";
 
 const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export default function CalendarBoard({ newPostDate: externalNewPostDate, setNewPostDate: externalSetNewPostDate }) {
-  const { posts, setPosts, selectPost, isLoading } = usePosts();
+export default function CalendarBoard({
+  newPostDate: externalNewPostDate,
+  setNewPostDate: externalSetNewPostDate,
+}) {
+  const { posts, setPosts, selectPost, isLoading, setLoading } = usePosts();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showAIBar, setShowAIBar] = useState(false);
   const [internalNewPostDate, setInternalNewPostDate] = useState(null);
+  const [loadError, setLoadError] = useState(null);
 
-  const newPostDate = externalNewPostDate !== undefined ? externalNewPostDate : internalNewPostDate;
+  const newPostDate =
+    externalNewPostDate !== undefined
+      ? externalNewPostDate
+      : internalNewPostDate;
   const setNewPostDate = (date) => {
     if (externalSetNewPostDate) {
       externalSetNewPostDate(date);
@@ -32,12 +49,26 @@ export default function CalendarBoard({ newPostDate: externalNewPostDate, setNew
   const month = currentDate.getMonth();
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchPosts = async () => {
-      const res = await postService.getAll();
-      setPosts(res.data);
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const res = await postService.getAll();
+        if (!cancelled) setPosts(res.data ?? []);
+      } catch (err) {
+        if (!cancelled) setLoadError(err.message || "Failed to load posts");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
+
     fetchPosts();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [setPosts, setLoading]);
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
@@ -59,7 +90,10 @@ export default function CalendarBoard({ newPostDate: externalNewPostDate, setNew
     const remaining = 7 - (days.length % 7);
     if (remaining < 7) {
       for (let i = 1; i <= remaining; i++) {
-        days.push({ date: new Date(year, month + 1, i), isCurrentMonth: false });
+        days.push({
+          date: new Date(year, month + 1, i),
+          isCurrentMonth: false,
+        });
       }
     }
     return days;
@@ -99,15 +133,17 @@ export default function CalendarBoard({ newPostDate: externalNewPostDate, setNew
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setNewPostDate(new Date().toLocaleDateString('en-CA'))}
-            className="flex items-center gap-1.5 rounded-xl bg-primary-light px-3 py-2 text-xs font-medium text-white transition-all hover:opacity-90 dark:bg-primary-dark dark:text-obsidian"
+            onClick={() =>
+              setNewPostDate(new Date().toLocaleDateString("en-CA"))
+            }
+            className="btn-primary"
           >
             <Plus size={14} />
             New Post
           </button>
           <button
             onClick={() => setShowAIBar((prev) => !prev)}
-            className="flex items-center gap-1.5 rounded-xl bg-accent-light px-3 py-2 text-xs font-medium text-white transition-all hover:opacity-90 dark:bg-accent-dark dark:text-obsidian"
+            className="btn-accent"
           >
             <Sparkles size={14} />
             AI Generate
@@ -129,6 +165,19 @@ export default function CalendarBoard({ newPostDate: externalNewPostDate, setNew
           </div>
         ))}
       </div>
+
+      {loadError && (
+        <div className="mx-6 mt-3 rounded-xl bg-red-50 px-4 py-3 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-300">
+          {loadError}
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="ml-2 font-semibold underline"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Calendar Grid */}
       <CalendarGrid

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   CalendarDays,
   Image,
@@ -6,27 +5,30 @@ import {
   BarChart3,
   Settings,
   ChefHat,
-} from 'lucide-react';
-import ThemeToggle from '../common/ThemeToggle';
-import CreateMenu from '../common/CreateMenu';
+} from "lucide-react";
+import ThemeToggle from "../common/ThemeToggle";
+import CreateMenu from "../common/CreateMenu";
 
 const NAV_ITEMS = [
-  { id: 'calendar', icon: CalendarDays, label: 'Calendar' },
-  { id: 'media', icon: Image, label: 'Media' },
-  { id: 'messages', icon: MessageSquare, label: 'Messages' },
-  { id: 'analytics', icon: BarChart3, label: 'Analytics' },
-  { id: 'settings', icon: Settings, label: 'Settings' },
+  { id: "calendar", icon: CalendarDays, label: "Calendar" },
+  { id: "media", icon: Image, label: "Media" },
+  { id: "messages", icon: MessageSquare, label: "Messages" },
+  { id: "analytics", icon: BarChart3, label: "Analytics" },
+  { id: "settings", icon: Settings, label: "Settings" },
 ];
 
-export default function Sidebar({ onCreate }) {
-  const [active, setActive] = useState('calendar');
+export default function Sidebar({ activeView = "calendar", onNavigate, onCreate }) {
+  const active = activeView;
 
   return (
     <aside className="flex h-screen w-[72px] flex-col items-center justify-between border-r border-gray-200/60 bg-surface-light py-6 dark:border-white/5 dark:bg-surface-dark">
       {/* Logo */}
       <div className="flex flex-col items-center gap-1">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light/20 dark:bg-primary-dark/20">
-          <ChefHat size={22} className="text-primary-light dark:text-primary-dark" />
+          <ChefHat
+            size={22}
+            className="text-primary-light dark:text-primary-dark"
+          />
         </div>
         <span className="mt-1 text-[9px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
           CHEF
@@ -40,12 +42,12 @@ export default function Sidebar({ onCreate }) {
           return (
             <button
               key={id}
-              onClick={() => setActive(id)}
+              onClick={() => onNavigate?.(id)}
               title={label}
               className={`group relative flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 ${
                 isActive
-                  ? 'bg-primary-light/20 text-primary-light dark:bg-primary-dark/20 dark:text-primary-dark'
-                  : 'text-text-secondary-light hover:bg-gray-100 dark:text-text-secondary-dark dark:hover:bg-white/5'
+                  ? "border border-pastel-violet-border bg-pastel-violet text-pastel-violet-text"
+                  : "text-text-secondary-light hover:bg-gray-100 dark:text-text-secondary-dark dark:hover:bg-white/5"
               }`}
             >
               <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
@@ -55,7 +57,7 @@ export default function Sidebar({ onCreate }) {
               </span>
               {/* Active indicator */}
               {isActive && (
-                <span className="absolute -left-[18px] h-5 w-1 rounded-r-full bg-primary-light dark:bg-primary-dark" />
+                <span className="absolute -left-[18px] h-5 w-1 rounded-r-full bg-pastel-violet-text" />
               )}
             </button>
           );

@@ -1,73 +1,97 @@
 # ContentChef 🍳
 
-A Micro-SaaS content planning platform tailored for content creators. Built for hackathon with a focus on clean architecture, premium UI/UX, and AI-powered content generation.
+A content planning platform for creators — calendar scheduling, a content editor ("Kitchen"), and AI-assisted post generation.
 
-## Tech Stack
+## What you can do
 
-- **Frontend:** React 18 + Vite + Tailwind CSS
-- **Backend:** Node.js + Express
-- **Drag & Drop:** @hello-pangea/dnd
-- **Icons:** Lucide React
+| Feature | Status |
+|---------|--------|
+| Monthly calendar with drag-and-drop posts | ✅ Working |
+| Create / edit / delete posts | ✅ Working |
+| Content Kitchen (hook, body, hashtags, status) | ✅ Working |
+| AI content plan generation | ✅ Puter AI in browser (no API key) |
+| AI moodboard preview | ✅ Puter AI image generation |
+| Light / dark theme | ✅ Working |
+| Context menu (status, delete, open kitchen) | ✅ Working |
 
-## Getting Started
+## Known limitations
+
+- **No database** — posts live in server memory and reset on restart
+- **No authentication** — not suitable for multi-user production as-is
+- **AI runs via Puter.js** in the browser — first use may prompt Puter sign-in (user-pays model)
+- Server `/api/generate-*` routes still exist as legacy fallbacks but the UI uses Puter directly
+- **Sidebar sections** (Media, Messages, Analytics, Settings) are UI placeholders
+- **File upload** in Kitchen is visual only
+- **"New Note"** in the create menu does nothing yet
+- **Instagram / TikTok** menu items open the same post modal (no platform-specific planner)
+
+## Tech stack
+
+- **Frontend:** React 18, Vite, Tailwind CSS, `@hello-pangea/dnd`
+- **Backend:** Node.js, Express, Helmet, rate limiting, CORS
+
+## Getting started
 
 ### Prerequisites
+
 - Node.js >= 18
 - npm >= 9
 
-### Installation
+### Install
 
 ```bash
-# Install server dependencies
-cd server
-npm install
-
-# Install client dependencies
-cd ../client
-npm install
+cd server && npm install
+cd ../client && npm install
 ```
 
-### Running Development Servers
+### Run (two terminals)
 
 ```bash
-# Terminal 1 — Backend
-cd server
-npm run dev
+# Terminal 1 — API on :3001
+cd server && npm run dev
 
-# Terminal 2 — Frontend
-cd client
-npm run dev
+# Terminal 2 — UI on :5173
+cd client && npm run dev
 ```
 
 - Frontend: http://localhost:5173
 - Backend: http://localhost:3001
 
-## Project Structure
+### Environment
+
+Copy `server/.env.example` to `server/.env`:
+
+```env
+PORT=3001
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173
+```
+
+Optional client override for production:
+
+```env
+# client/.env
+VITE_API_URL=https://your-api.example.com/api
+```
+
+## API
 
 ```
-ContentChef/
-├── client/                 # React + Tailwind Frontend
-│   ├── public/
-│   ├── src/
-│   │   ├── components/     # UI Components
-│   │   ├── context/        # React Context Providers
-│   │   ├── hooks/          # Custom Hooks
-│   │   ├── constants/      # Theme tokens, config
-│   │   ├── services/       # API service layer
-│   │   ├── styles/         # Global styles
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── package.json
-└── server/                 # Node.js + Express Backend
-    ├── src/
-    │   ├── config/         # Server configuration
-    │   ├── controllers/    # Request handlers
-    │   ├── middleware/      # Express middleware
-    │   ├── models/         # Data models
-    │   ├── routes/         # API routes
-    │   ├── services/       # Business logic
-    │   └── app.js
-    └── package.json
+GET    /api/health
+GET    /api/posts
+POST   /api/posts
+PUT    /api/posts/:id
+DELETE /api/posts/:id
+POST   /api/generate-plan
+POST   /api/generate-moodboard
+```
+
+## Project structure
+
+```
+contentchef/
+├── client/          React app
+└── server/          Express API
 ```
 
 ## License

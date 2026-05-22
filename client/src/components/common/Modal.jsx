@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-import { X } from 'lucide-react';
+import { useEffect } from "react";
+import { X } from "lucide-react";
 
 export default function Modal({ title, onClose, children }) {
   useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
   return (
