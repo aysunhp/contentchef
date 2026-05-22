@@ -1,12 +1,23 @@
-import { forwardRef } from 'react';
-import { Plus } from 'lucide-react';
-import CalendarCard from './CalendarCard';
+import { forwardRef } from "react";
+import { Plus } from "lucide-react";
+import CalendarCard from "./CalendarCard";
 
 const CalendarCell = forwardRef(function CalendarCell(
-  { date, isCurrentMonth, isToday, isDragOver, posts, onSelectPost, onNewPost, onContextMenu, placeholder, ...props },
+  {
+    date,
+    isCurrentMonth,
+    isToday,
+    isDragOver,
+    posts,
+    onSelectPost,
+    onNewPost,
+    onContextMenu,
+    placeholder,
+    ...props
+  },
   ref,
 ) {
-  const dateStr = date.toLocaleDateString('en-CA');
+  const dateStr = date.toLocaleDateString("en-CA");
   const day = date.getDate();
 
   return (
@@ -15,16 +26,16 @@ const CalendarCell = forwardRef(function CalendarCell(
       {...props}
       className={`group min-h-[100px] rounded-xl border p-1.5 transition-colors ${
         isDragOver
-          ? 'border-primary-light/50 bg-primary-light/10 dark:border-primary-dark/50 dark:bg-primary-dark/10'
-          : 'border-transparent hover:border-gray-200/60 dark:hover:border-white/5'
-      } ${!isCurrentMonth ? 'opacity-30' : ''}`}
+          ? "border-primary-light/50 bg-primary-light/10 dark:border-primary-dark/50 dark:bg-primary-dark/10"
+          : "border-transparent hover:border-gray-200/60 dark:hover:border-white/5"
+      } ${!isCurrentMonth ? "opacity-30" : ""}`}
     >
       <div className="mb-1 flex items-center justify-between">
         <span
           className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-medium ${
             isToday
-              ? 'bg-primary-light text-white dark:bg-primary-dark dark:text-obsidian'
-              : 'text-text-secondary-light dark:text-text-secondary-dark'
+              ? "bg-pastel-violet text-pastel-violet-text"
+              : "text-text-secondary-light dark:text-text-secondary-dark"
           }`}
         >
           {day}
@@ -45,10 +56,7 @@ const CalendarCell = forwardRef(function CalendarCell(
             key={post.id}
             post={post}
             index={index}
-            onClick={(post) => {
-              console.log('[CalendarCell] Card clicked, calling onSelectPost with:', post);
-              onSelectPost(post);
-            }}
+            onClick={onSelectPost}
             onContextMenu={onContextMenu}
           />
         ))}

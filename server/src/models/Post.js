@@ -1,15 +1,24 @@
 const { v4: uuidv4 } = require('uuid');
 const { getCollection } = require('../config/database');
 
-/**
- * Post model — operates on in-memory store.
- * Swap getCollection('posts') with a real DB query layer
- * when migrating to production.
- * post models is here
- */
-
 const VALID_STATUSES = ['draft', 'review', 'published'];
 const VALID_FORMATS = ['video', 'image'];
+const ALLOWED_UPDATE_FIELDS = [
+  'date',
+  'topic',
+  'category',
+  'formatType',
+  'status',
+  'visualInstructions',
+  'mediaUrl',
+  'scriptOrCaption',
+];
+
+const sanitizeScript = (script) => ({
+  hook: script?.hook || '',
+  body: script?.body || '',
+  hashtags: Array.isArray(script?.hashtags) ? script.hashtags : [],
+});
 
 const createPost = (data) => {
   const posts = getCollection('posts');
@@ -22,13 +31,8 @@ const createPost = (data) => {
     formatType: VALID_FORMATS.includes(data.formatType) ? data.formatType : 'image',
     status: VALID_STATUSES.includes(data.status) ? data.status : 'draft',
     visualInstructions: data.visualInstructions || '',
-    scriptOrCaption: {
-      hook: data.scriptOrCaption?.hook || '',
-      body: data.scriptOrCaption?.body || '',
-      hashtags: Array.isArray(data.scriptOrCaption?.hashtags)
-        ? data.scriptOrCaption.hashtags
-        : [],
-    },
+    mediaUrl: data.mediaUrl || null,
+    scriptOrCaption: sanitizeScript(data.scriptOrCaption),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -50,17 +54,26 @@ const updatePost = (id, updates) => {
   if (index === -1) return null;
 
   const current = posts[index];
+  const sanitized = {};
+
+  for (const key of ALLOWED_UPDATE_FIELDS) {
+    if (updates[key] === undefined) continue;
+    if (key === 'status' && !VALID_STATUSES.includes(updates.status)) continue;
+    if (key === 'formatType' && !VALID_FORMATS.includes(updates.formatType)) continue;
+    if (key === 'scriptOrCaption') {
+      sanitized.scriptOrCaption = sanitizeScript(updates.scriptOrCaption);
+      continue;
+    }
+    sanitized[key] = updates[key];
+  }
+
   const updated = {
     ...current,
-    ...updates,
+    ...sanitized,
     id: current.id,
     createdAt: current.createdAt,
     updatedAt: new Date().toISOString(),
   };
-
-  if (updates.status && !VALID_STATUSES.includes(updates.status)) {
-    updated.status = current.status;
-  }
 
   posts[index] = updated;
   return updated;

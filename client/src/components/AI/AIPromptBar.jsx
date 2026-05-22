@@ -1,32 +1,53 @@
-import { useState } from 'react';
-import { Sparkles, X, Loader2 } from 'lucide-react';
-import { aiService } from '../../services/api';
-import { usePosts } from '../../context/PostContext';
-import { useFetch } from '../../hooks/useFetch';
+import { useState } from "react";
+import { Sparkles, X, Loader2 } from "lucide-react";
+import { postService } from "../../services/api";
+import { generateContentPlan } from "../../services/puterAi";
+import { usePosts } from "../../context/PostContext";
+import { useFetch } from "../../hooks/useFetch";
 
 export default function AIPromptBar({ onClose }) {
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState("");
+  const [statusNote, setStatusNote] = useState("");
   const { addPosts } = usePosts();
   const { isLoading, error, execute } = useFetch();
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
 
+    setStatusNote("");
+
     try {
-      const result = await execute(() => aiService.generatePlan(prompt));
-      console.log('AI Result:', result);
-      if (result?.data) {
-        addPosts(result.data);
-        setPrompt('');
+      await execute(async () => {
+        const { posts, source } = await generateContentPlan(prompt);
+
+        if (source === "server") {
+          addPosts(posts);
+          setStatusNote(
+            "Used built-in planner (Puter unavailable). Posts added.",
+          );
+        } else {
+          const saved = [];
+          for (const item of posts) {
+            const res = await postService.create(item);
+            if (res?.data) saved.push(res.data);
+          }
+          if (saved.length === 0) {
+            throw new Error("No posts were saved");
+          }
+          addPosts(saved);
+          setStatusNote("Generated with Puter AI.");
+        }
+
+        setPrompt("");
         onClose();
-      }
-    } catch (err) {
-      console.error('AI Error:', err);
+      });
+    } catch {
+      // error surfaced via useFetch
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleGenerate();
     }
@@ -35,23 +56,29 @@ export default function AIPromptBar({ onClose }) {
   return (
     <div className="border-b border-gray-200/60 bg-primary-light/5 px-6 py-3 dark:border-white/5 dark:bg-primary-dark/5">
       <div className="flex items-center gap-2">
-        <Sparkles size={16} className="shrink-0 text-primary-light dark:text-primary-dark" />
+        <Sparkles
+          size={16}
+          className="shrink-0 text-primary-light dark:text-primary-dark"
+        />
         <input
           type="text"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder='e.g. "I am an English teacher, generate a week of content..."'
+          placeholder='Describe your niche — e.g. "Vegan meal prep for busy parents, 7 TikTok ideas"'
           disabled={isLoading}
           className="flex-1 bg-transparent text-xs text-text-primary-light outline-none placeholder:text-text-secondary-light/60 dark:text-text-primary-dark dark:placeholder:text-text-secondary-dark/60"
         />
         {isLoading ? (
-          <Loader2 size={16} className="animate-spin text-primary-light dark:text-primary-dark" />
+          <Loader2
+            size={16}
+            className="animate-spin text-primary-light dark:text-primary-dark"
+          />
         ) : (
           <button
             onClick={handleGenerate}
             disabled={!prompt.trim()}
-            className="rounded-lg bg-primary-light px-3 py-1 text-[11px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40 dark:bg-primary-dark dark:text-obsidian"
+            className="btn-primary px-3 py-1"
           >
             Generate
           </button>
@@ -63,9 +90,13 @@ export default function AIPromptBar({ onClose }) {
           <X size={14} />
         </button>
       </div>
-      {error && (
-        <p className="mt-1.5 text-[10px] text-red-500">{error}</p>
+
+      {statusNote && (
+        <p className="mt-1 text-[9px] text-pastel-violet-text dark:text-primary-dark">
+          {statusNote}
+        </p>
       )}
+      {error && <p className="mt-1 text-[10px] text-red-500">{error}</p>}
     </div>
   );
 }

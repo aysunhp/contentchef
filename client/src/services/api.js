@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 async function request(endpoint, options = {}) {
   const config = {
@@ -6,8 +6,21 @@ async function request(endpoint, options = {}) {
     ...options,
   };
 
-  const response = await fetch(`${API_BASE}${endpoint}`, config);
-  const data = await response.json();
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${endpoint}`, config);
+  } catch {
+    throw new Error('Unable to reach the server. Is the backend running?');
+  }
+
+  let data = {};
+  try {
+    data = await response.json();
+  } catch {
+    if (!response.ok) {
+      throw new Error(`Request failed (${response.status})`);
+    }
+  }
 
   if (!response.ok) {
     throw new Error(data.error?.message || 'Something went wrong');
@@ -29,4 +42,10 @@ export const aiService = {
     request('/generate-plan', { method: 'POST', body: JSON.stringify({ prompt }) }),
   generateMoodboard: (topic) =>
     request('/generate-moodboard', { method: 'POST', body: JSON.stringify({ topic }) }),
+};
+
+export const mediaService = {
+  getAll: () => request('/media'),
+  create: (body) =>
+    request('/media', { method: 'POST', body: JSON.stringify(body) }),
 };
