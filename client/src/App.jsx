@@ -8,7 +8,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <PostProvider>
-        <div className="flex h-screen overflow-hidden bg-cream dark:bg-obsidian">
+        <div className="flex h-screen overflow-hidden bg-[#F9F9F9] transition-colors duration-300 dark:bg-obsidian">
           <Sidebar />
           <main className="flex flex-1 overflow-hidden">
             <CalendarBoard />
