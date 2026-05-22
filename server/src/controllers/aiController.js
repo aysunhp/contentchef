@@ -5,10 +5,7 @@ const generatePlan = async (req, res, next) => {
   try {
     const { prompt } = req.body;
     const plan = await aiService.generatePlan(prompt);
-
-    // Persist generated items as draft posts
     const savedPosts = plan.map((item) => Post.createPost(item));
-
     res.json({ success: true, data: savedPosts });
   } catch (error) {
     next(error);
@@ -19,7 +16,6 @@ const generateMoodboard = async (req, res, next) => {
   try {
     const { topic } = req.body;
     const moodboard = await aiService.generateMoodboard(topic);
-
     res.json({ success: true, data: moodboard });
   } catch (error) {
     next(error);

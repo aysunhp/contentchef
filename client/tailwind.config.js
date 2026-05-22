@@ -1,42 +1,52 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{js,jsx}'],
-  darkMode: 'class',
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        cream: '#FDF6E3',
+        cream: "#F0F9FF",
         surface: {
-          light: '#FFFFFF',
-          dark: '#18181C',
+          light: "#FFFFFF",
+          dark: "#1F2937",
         },
         primary: {
-          light: '#A7C7E7',
-          dark: '#C3B1E1',
+          light: "#8B5CF6",
+          dark: "#EC4899",
         },
         accent: {
-          light: '#B5EAD7',
-          dark: '#98FFD9',
+          light: "#06B6D4",
+          dark: "#14B8A6",
         },
         text: {
           primary: {
-            light: '#333333',
-            dark: '#F5F5F7',
+            light: "#1E293B",
+            dark: "#F3F4F6",
           },
           secondary: {
-            light: '#7F8C8D',
-            dark: '#A1A1AA',
+            light: "#64748B",
+            dark: "#D1D5DB",
           },
         },
-        obsidian: '#0F0F12',
+        obsidian: "#0F172A",
+        pastel: {
+          violet: "#EDE9FE",
+          "violet-hover": "#DDD6FE",
+          "violet-border": "#C4B5FD",
+          "violet-text": "#6D28D9",
+          sky: "#E0F2FE",
+          "sky-hover": "#BAE6FD",
+          "sky-border": "#7DD3FC",
+          "sky-text": "#0369A1",
+        },
       },
       boxShadow: {
-        'card-light': '0 4px 20px rgba(0,0,0,0.05)',
-        'card-dark': '0 4px 25px rgba(0,0,0,0.4)',
+        "card-light": "0 4px 20px rgba(0,0,0,0.05)",
+        "card-dark": "0 4px 25px rgba(0,0,0,0.4)",
       },
       borderRadius: {
-        '2xl': '1rem',
-        '3xl': '1.5rem',
+        "2xl": "1rem",
+        "3xl": "1.5rem",
       },
     },
   },
