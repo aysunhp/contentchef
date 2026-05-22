@@ -138,4 +138,48 @@ const getMe = (req, res, next) => {
   }
 };
 
-module.exports = { register, login, logout, getMe };
+const updateProfile = (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const { name, bio } = req.body;
+
+    const user = User.updateUser(userId, { name, bio });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'User not found' },
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          bio: user.bio || '',
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteAccount = (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const deleted = User.deleteUser(userId);
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: { message: 'User not found' } });
+    }
+
+    res.json({ success: true, data: { message: 'Account deleted' } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { register, login, logout, getMe, updateProfile, deleteAccount };
