@@ -5,6 +5,7 @@ const { getCollection } = require('../config/database');
  * Post model — operates on in-memory store.
  * Swap getCollection('posts') with a real DB query layer
  * when migrating to production.
+ * post models is here
  */
 
 const VALID_STATUSES = ['draft', 'review', 'published'];
