@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const { getCollection } = require('../config/database');
+const { getCollection, saveStore } = require('../config/database');
 
 const createUser = (data) => {
   const users = getCollection('users');
@@ -19,6 +19,7 @@ const createUser = (data) => {
   };
 
   users.push(user);
+  saveStore();
   return user;
 };
 
@@ -32,8 +33,31 @@ const getUserById = (id) => {
   return users.find(u => u.id === id) || null;
 };
 
+const updateUser = (id, data) => {
+  const users = getCollection('users');
+  const index = users.findIndex(u => u.id === id);
+  if (index === -1) return null;
+
+  if (data.name !== undefined) users[index].name = data.name;
+  if (data.bio !== undefined) users[index].bio = data.bio;
+
+  saveStore();
+  return users[index];
+};
+
+const deleteUser = (id) => {
+  const users = getCollection('users');
+  const index = users.findIndex(u => u.id === id);
+  if (index === -1) return false;
+  users.splice(index, 1);
+  saveStore();
+  return true;
+};
+
 module.exports = {
   createUser,
   getUserByEmail,
   getUserById,
+  updateUser,
+  deleteUser,
 };

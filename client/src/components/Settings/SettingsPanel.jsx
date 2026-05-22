@@ -1,11 +1,15 @@
-import { useState } from "react";
-import { Save, RotateCcw, Bell, Lock, Palette } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Save, Bell, Lock, LogOut } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import ConfirmModal from "../common/ConfirmModal";
 
 export default function SettingsPanel() {
+    const { user, token, logout, updateUser } = useAuth();
+
     const [settings, setSettings] = useState({
-        username: "Content Creator",
-        email: "creator@example.com",
-        bio: "Creating amazing content for my audience",
+        username: "",
+        email: "",
+        bio: "",
         notifications: {
             postReminders: true,
             engagementAlerts: true,
@@ -19,6 +23,20 @@ export default function SettingsPanel() {
     });
 
     const [saved, setSaved] = useState(false);
+    const [saveError, setSaveError] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
+
+    useEffect(() => {
+        if (user) {
+            setSettings((prev) => ({
+                ...prev,
+                username: user.name || "",
+                email: user.email || "",
+            }));
+        }
+    }, [user]);
 
     const handleChange = (field, value) => {
         setSettings((prev) => ({ ...prev, [field]: value }));
@@ -36,30 +54,38 @@ export default function SettingsPanel() {
         setSaved(false);
     };
 
-    const handleSave = () => {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+    const handleSave = async () => {
+        setSaving(true);
+        setSaveError('');
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+            const response = await fetch(`${apiUrl}/auth/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    name: settings.username,
+                    bio: settings.bio,
+                }),
+            });
+            const data = await response.json();
+            if (data.success) {
+                updateUser(data.data.user);
+                setSaved(true);
+                setTimeout(() => setSaved(false), 2000);
+            } else {
+                setSaveError(data.error?.message || 'Failed to save');
+            }
+        } catch {
+            setSaveError('Network error. Please try again.');
+        } finally {
+            setSaving(false);
+        }
     };
 
-    const handleReset = () => {
-        // Reset to defaults
-        setSettings({
-            username: "Content Creator",
-            email: "creator@example.com",
-            bio: "Creating amazing content for my audience",
-            notifications: {
-                postReminders: true,
-                engagementAlerts: true,
-                weeklyDigest: true,
-                platformNotifications: false,
-            },
-            theme: "auto",
-            language: "english",
-            defaultPostFormat: "image",
-            defaultPostStatus: "draft",
-        });
-        setSaved(false);
-    };
+    // Removed profile reset functionality per UX request
 
     return (
         <section className="flex flex-1 flex-col overflow-hidden">
@@ -73,12 +99,12 @@ export default function SettingsPanel() {
             </header>
 
             <div className="scrollbar-hidden flex-1 overflow-y-auto p-6">
-                <div className="max-w-2xl space-y-8">
+                <div className="max-w-2xl mx-auto space-y-8">
                     {/* Profile Section */}
                     <div className="rounded-2xl border border-gray-200/60 p-6 dark:border-white/10">
                         <div className="mb-6 flex items-center gap-4">
                             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark">
-                                <span className="text-xl font-bold text-white">CC</span>
+                                <span className="text-xl font-bold text-white">{user?.name?.charAt(0).toUpperCase() || 'U'}</span>
                             </div>
                             <div>
                                 <h2 className="font-semibold text-text-primary-light dark:text-text-primary-dark">
@@ -167,75 +193,7 @@ export default function SettingsPanel() {
                         </div>
                     </div>
 
-                    {/* Preferences Section */}
-                    <div className="rounded-2xl border border-gray-200/60 p-6 dark:border-white/10">
-                        <div className="mb-6 flex items-center gap-3">
-                            <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/20">
-                                <Palette size={18} className="text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <div>
-                                <h2 className="font-semibold text-text-primary-light dark:text-text-primary-dark">
-                                    Preferences
-                                </h2>
-                                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                                    Customize your app experience
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div>
-                                <label className="label-style">Theme</label>
-                                <select
-                                    value={settings.theme}
-                                    onChange={(e) => handleChange("theme", e.target.value)}
-                                    className="input-style"
-                                >
-                                    <option value="auto">Auto (System)</option>
-                                    <option value="light">Light</option>
-                                    <option value="dark">Dark</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="label-style">Language</label>
-                                <select
-                                    value={settings.language}
-                                    onChange={(e) => handleChange("language", e.target.value)}
-                                    className="input-style"
-                                >
-                                    <option value="english">English</option>
-                                    <option value="spanish">Español</option>
-                                    <option value="french">Français</option>
-                                    <option value="german">Deutsch</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="label-style">Default Post Format</label>
-                                <select
-                                    value={settings.defaultPostFormat}
-                                    onChange={(e) => handleChange("defaultPostFormat", e.target.value)}
-                                    className="input-style"
-                                >
-                                    <option value="image">Image</option>
-                                    <option value="video">Video</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="label-style">Default Post Status</label>
-                                <select
-                                    value={settings.defaultPostStatus}
-                                    onChange={(e) => handleChange("defaultPostStatus", e.target.value)}
-                                    className="input-style"
-                                >
-                                    <option value="draft">Draft</option>
-                                    <option value="review">Review</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+                    
 
                     {/* Security Section */}
                     <div className="rounded-2xl border border-gray-200/60 p-6 dark:border-white/10">
@@ -254,36 +212,77 @@ export default function SettingsPanel() {
                         </div>
 
                         <div className="space-y-3">
+                            
                             <button className="w-full rounded-lg border border-gray-200/60 px-4 py-2 text-xs font-medium text-text-primary-light transition-colors hover:bg-gray-50 dark:border-white/10 dark:text-text-primary-dark dark:hover:bg-white/5">
                                 Change Password
                             </button>
-                            <button className="w-full rounded-lg border border-gray-200/60 px-4 py-2 text-xs font-medium text-text-primary-light transition-colors hover:bg-gray-50 dark:border-white/10 dark:text-text-primary-dark dark:hover:bg-white/5">
-                                Enable Two-Factor Authentication
-                            </button>
-                            <button className="w-full rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 dark:border-red-900/30 dark:bg-red-900/10 dark:text-red-400 dark:hover:bg-red-900/20">
+                            <button
+                                onClick={() => setShowDeleteAccountModal(true)}
+                                className="w-full rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 dark:border-red-900/30 dark:bg-red-900/10 dark:text-red-400 dark:hover:bg-red-900/20"
+                            >
                                 Delete Account
+                            </button>
+                            <button
+                                onClick={logout}
+                                className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200/60 px-4 py-2 text-xs font-medium text-text-primary-light transition-colors hover:bg-gray-50 dark:border-white/10 dark:text-text-primary-dark dark:hover:bg-white/5"
+                            >
+                                <LogOut size={14} />
+                                Logout
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
+                {deleteError && (
+                    <div className="mx-6 mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-950/30 dark:text-red-400">
+                        {deleteError}
+                    </div>
+                )}
+
+                {showDeleteAccountModal && (
+                    <ConfirmModal
+                        title="Delete Account"
+                        message="Are you sure you want to delete your account? This action cannot be undone."
+                        onConfirm={async () => {
+                            setDeleteError('');
+                            try {
+                                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+                                const res = await fetch(`${apiUrl}/auth/account`, {
+                                    method: 'DELETE',
+                                    headers: { Authorization: `Bearer ${token}` },
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                    setShowDeleteAccountModal(false);
+                                    logout();
+                                } else {
+                                    setDeleteError(data.error?.message || 'Failed to delete account');
+                                }
+                            } catch (err) {
+                                setDeleteError('Network error. Please try again.');
+                            }
+                        }}
+                        onClose={() => setShowDeleteAccountModal(false)}
+                    />
+                )}
+
             {/* Footer Actions */}
+            {saveError && (
+                <div className="mx-6 mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-950/30 dark:text-red-400">
+                    {saveError}
+                </div>
+            )}
             <div className="border-t border-gray-200/60 bg-surface-light/50 px-6 py-4 dark:border-white/5 dark:bg-surface-dark/50">
                 <div className="flex justify-end gap-2">
-                    <button
-                        onClick={handleReset}
-                        className="flex items-center gap-1.5 rounded-xl border border-gray-200/60 px-4 py-2 text-xs font-medium text-text-secondary-light transition-colors hover:bg-gray-100 dark:border-white/10 dark:text-text-secondary-dark dark:hover:bg-white/5"
-                    >
-                        <RotateCcw size={14} />
-                        Reset
-                    </button>
+                    
                     <button
                         onClick={handleSave}
+                        disabled={saving}
                         className="btn-primary flex items-center gap-1.5"
                     >
                         <Save size={14} />
-                        {saved ? "Saved!" : "Save Changes"}
+                        {saving ? "Saving..." : saved ? "Saved!" : "Save Changes"}
                     </button>
                 </div>
             </div>

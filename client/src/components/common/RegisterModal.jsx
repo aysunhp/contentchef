@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Loader2, UserPlus, Mail, Lock, User } from 'lucide-react';
 import Modal from './Modal';
-import { useAuth } from '../../context/AuthContext';
 
 export default function RegisterModal({ onClose, onSwitchToLogin }) {
-  const { login } = useAuth();
+  const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({
@@ -55,8 +54,8 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
       const data = await response.json();
 
       if (data.success) {
-        login(data.data.user, data.data.token);
-        onClose();
+        setSuccess(true);
+        setTimeout(() => onSwitchToLogin(), 1500);
       } else {
         setError(data.error?.message || 'Registration failed');
       }
@@ -133,6 +132,13 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
             />
           </div>
         </div>
+
+        {success && (
+          <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 text-xs text-green-600 dark:bg-green-950/30 dark:text-green-400">
+            <span>✓</span>
+            Account created! Redirecting to login...
+          </div>
+        )}
 
         {error && (
           <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-950/30 dark:text-red-400">
