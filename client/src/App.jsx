@@ -10,6 +10,7 @@ import MediaPanel from "./components/Media";
 import MessagesPanel from "./components/Messages";
 import AnalyticsPanel from "./components/Analytics";
 import SettingsPanel from "./components/Settings";
+import TrendHijackerPanel from "./components/TrendHijacker";
 import NewNoteModal from "./components/common/NewNoteModal";
 import LoginModal from "./components/common/LoginModal";
 import RegisterModal from "./components/common/RegisterModal";
@@ -85,6 +86,8 @@ function AppContent() {
           <AnalyticsPanel />
         ) : activeView === "settings" ? (
           <SettingsPanel />
+        ) : activeView === "trends" ? (
+          <TrendHijackerPanel />
         ) : (
           <>
             <CalendarBoard

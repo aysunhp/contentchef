@@ -36,7 +36,7 @@ export default function CalendarCard({ post, index, onClick, onContextMenu }) {
           {...provided.dragHandleProps}
           onClick={handleClick}
           onContextMenu={handleContextMenu}
-          className={`cursor-pointer overflow-hidden rounded-xl border border-[#EFE6CF] bg-[#FBF6E7] shadow-sm transition-all dark:border-[#3D341E] dark:bg-[#2A2418] ${
+          className={`cursor-pointer overflow-hidden rounded-xl border border-bg-primary-light bg-[#ede9fe] shadow-sm transition-all dark:border-[#3D341E] dark:bg-[#2A2418] ${
             hasMedia ? "min-h-[120px]" : ""
           } ${
             snapshot.isDragging

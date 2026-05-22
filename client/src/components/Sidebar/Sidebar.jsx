@@ -23,13 +23,13 @@ export default function Sidebar({ activeView = "calendar", onNavigate, onCreate,
   const active = activeView;
 
   return (
-    <aside className="flex h-screen w-[72px] flex-col items-center justify-between border-r border-gray-200/60 bg-surface-light py-6 dark:border-white/5 dark:bg-surface-dark">
+    <aside className="flex h-screen w-[92px] flex-col items-center justify-between border-r border-gray-200/60 bg-surface-light py-6 dark:border-white/5 dark:bg-surface-dark">
       {/* Logo */}
       <div className="flex flex-col items-center gap-1">
         <img
           src="/image.png"
           alt="ContentChef"
-          className="h-14 w-14 rounded-xl object-contain"
+          className="h-20 w-20 rounded-xl object-contain"
         />
       </div>
 
