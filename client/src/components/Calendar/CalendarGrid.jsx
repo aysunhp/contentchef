@@ -6,7 +6,7 @@ import { postService } from '../../services/api';
 import CalendarCell from './CalendarCell';
 import ContextMenu from '../common/ContextMenu';
 
-const formatDate = (date) => date.toISOString().split('T')[0];
+const formatDate = (date) => date.toLocaleDateString('en-CA');
 
 export default function CalendarGrid({ days, posts, onSelectPost, onNewPost, isLoading }) {
   const { updatePost, deletePost, selectPost } = usePosts();

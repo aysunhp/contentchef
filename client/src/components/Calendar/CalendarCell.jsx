@@ -6,7 +6,7 @@ const CalendarCell = forwardRef(function CalendarCell(
   { date, isCurrentMonth, isToday, isDragOver, posts, onSelectPost, onNewPost, onContextMenu, placeholder, ...props },
   ref,
 ) {
-  const dateStr = date.toISOString().split('T')[0];
+  const dateStr = date.toLocaleDateString('en-CA');
   const day = date.getDate();
 
   return (
@@ -15,7 +15,7 @@ const CalendarCell = forwardRef(function CalendarCell(
       {...props}
       className={`group min-h-[100px] rounded-xl border p-1.5 transition-colors ${
         isDragOver
-          ? 'border-primary-light/50 bg-primary-light/5 dark:border-primary-dark/50 dark:bg-primary-dark/5'
+          ? 'border-primary-light/50 bg-primary-light/10 dark:border-primary-dark/50 dark:bg-primary-dark/10'
           : 'border-transparent hover:border-gray-200/60 dark:hover:border-white/5'
       } ${!isCurrentMonth ? 'opacity-30' : ''}`}
     >
@@ -45,7 +45,10 @@ const CalendarCell = forwardRef(function CalendarCell(
             key={post.id}
             post={post}
             index={index}
-            onClick={() => onSelectPost(post)}
+            onClick={(post) => {
+              console.log('[CalendarCell] Card clicked, calling onSelectPost with:', post);
+              onSelectPost(post);
+            }}
             onContextMenu={onContextMenu}
           />
         ))}

@@ -20,6 +20,12 @@ export default function CalendarCard({ post, index, onClick, onContextMenu }) {
     onContextMenu?.({ x: e.clientX, y: e.clientY, post });
   };
 
+  const handleClick = (e) => {
+    console.log('[CalendarCard] Clicked post:', post);
+    e.stopPropagation();
+    onClick?.(post);
+  };
+
   return (
     <Draggable draggableId={post.id} index={index}>
       {(provided, snapshot) => (
@@ -27,7 +33,7 @@ export default function CalendarCard({ post, index, onClick, onContextMenu }) {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          onClick={onClick}
+          onClick={handleClick}
           onContextMenu={handleContextMenu}
           className={`cursor-pointer rounded-xl border border-gray-200/40 bg-surface-light px-2 py-1.5 transition-all dark:border-white/5 dark:bg-surface-dark ${
             snapshot.isDragging
