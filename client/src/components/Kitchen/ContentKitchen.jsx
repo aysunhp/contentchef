@@ -95,6 +95,7 @@ export default function ContentKitchen() {
             {selectedPost.date}
           </p>
         </div>
+        {/* Buttons */}
         <div className="flex items-center gap-1">
           <button
             onClick={handleDelete}
@@ -122,9 +123,8 @@ export default function ContentKitchen() {
                 <button
                   key={s}
                   onClick={() => setDraft((prev) => ({ ...prev, status: s }))}
-                  className={`rounded-lg px-3 py-1 text-[10px] font-semibold uppercase transition-all ${st.bg} ${st.text} ${
-                    draft.status === s ? 'ring-2 ring-offset-1 ring-current' : 'opacity-50 hover:opacity-80'
-                  }`}
+                  className={`rounded-lg px-3 py-1 text-[10px] font-semibold uppercase transition-all ${st.bg} ${st.text} ${draft.status === s ? 'ring-2 ring-offset-1 ring-current' : 'opacity-50 hover:opacity-80'
+                    }`}
                 >
                   {s}
                 </button>
@@ -162,7 +162,7 @@ export default function ContentKitchen() {
               AI Moodboard
             </button>
           </div>
-
+          {/* Moodboard Display */}
           {moodboard ? (
             <div className="overflow-hidden rounded-2xl">
               <img
