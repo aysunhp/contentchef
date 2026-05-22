@@ -42,10 +42,19 @@ export const aiService = {
     request('/generate-plan', { method: 'POST', body: JSON.stringify({ prompt }) }),
   generateMoodboard: (topic) =>
     request('/generate-moodboard', { method: 'POST', body: JSON.stringify({ topic }) }),
+  generateViralityScore: (payload) =>
+    request('/generate-virality', { method: 'POST', body: JSON.stringify(payload) }),
 };
 
 export const mediaService = {
   getAll: () => request('/media'),
   create: (body) =>
     request('/media', { method: 'POST', body: JSON.stringify(body) }),
+};
+
+export const trendsService = {
+  find: (payload) =>
+    request('/trends/find', { method: 'POST', body: JSON.stringify(payload) }),
+  generate: (payload) =>
+    request('/trends/generate', { method: 'POST', body: JSON.stringify(payload) }),
 };

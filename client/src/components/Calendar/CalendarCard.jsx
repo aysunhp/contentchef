@@ -36,7 +36,9 @@ export default function CalendarCard({ post, index, onClick, onContextMenu }) {
           {...provided.dragHandleProps}
           onClick={handleClick}
           onContextMenu={handleContextMenu}
-          className={`cursor-pointer overflow-hidden rounded-xl border border-gray-200/40 bg-surface-light transition-all dark:border-white/5 dark:bg-surface-dark ${
+          className={`cursor-pointer overflow-hidden rounded-xl border border-[#EFE6CF] bg-[#FBF6E7] shadow-sm transition-all dark:border-[#3D341E] dark:bg-[#2A2418] ${
+            hasMedia ? "min-h-[120px]" : ""
+          } ${
             snapshot.isDragging
               ? "rotate-2 scale-105 shadow-card-dark ring-2 ring-primary-light/30 dark:ring-primary-dark/30"
               : "hover:rotate-1 hover:shadow-card-light dark:hover:shadow-card-dark"
@@ -46,11 +48,11 @@ export default function CalendarCard({ post, index, onClick, onContextMenu }) {
             <img
               src={post.mediaUrl}
               alt=""
-              className="h-10 w-full object-cover"
+              className="h-16 w-full object-contain bg-gray-100 dark:bg-white/5"
             />
           )}
 
-          <div className={`px-2 ${hasMedia ? "py-1" : "py-1.5"}`}>
+          <div className={`px-2 ${hasMedia ? "py-2" : "py-2"}`}>
             <div className="flex items-center gap-1">
               {post.formatType === "video" ? (
                 <Video

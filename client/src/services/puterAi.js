@@ -7,15 +7,17 @@ import { aiService } from "./api";
 
 const PLAN_SYSTEM_PROMPT = `You are ContentChef, an expert social media strategist and short-form content producer.
 
-Your job: turn a creator's brief into a focused 7-day content calendar.
+Your job: turn a creator's brief into a rich, detailed 7-day content calendar that gives the creator everything they need to film and publish.
 
 Rules:
 - Match the creator's niche, audience, tone, and platform (Instagram, TikTok, LinkedIn, etc.) from their brief.
-- Write scroll-stopping hooks and concise, platform-ready captions.
+- Hooks must be scroll-stopping — concrete numbers, curiosity gaps, or pattern interrupts. Up to 180 characters.
+- Captions/bodies must be SUBSTANTIVE: 5-8 sentences (or short paragraphs) that deliver real value — context, a teachable insight, an example, a concrete takeaway, and a clear CTA. Do not write filler.
+- For videos, structure the body as a mini-script with beats (intro → main point → example → CTA) the creator can read aloud.
 - Alternate "video" and "image" formatType across the week when it makes sense.
 - Categories must fit the niche (not generic labels unless the brief is generic).
-- visualInstructions: one sentence describing the visual (pastel, clean, on-brand).
-- hashtags: 3–5 strings, each starting with #, niche-relevant (never reuse the same list for every post).
+- visualInstructions: 2-3 sentences describing the visual direction, composition, color palette, and any on-screen text.
+- hashtags: 5-8 strings, each starting with #, niche-relevant and varied per post (never reuse the same list for every post).
 - Output ONLY valid JSON. No markdown, no code fences, no commentary.`;
 
 function buildPlanUserPrompt(userPrompt) {
@@ -37,11 +39,11 @@ Return JSON in this exact shape:
       "topic": "Short catchy title",
       "category": "Niche-specific category",
       "formatType": "video",
-      "visualInstructions": "Visual direction for designer or AI image",
+      "visualInstructions": "2-3 sentences: composition, palette, on-screen text, and overall mood",
       "scriptOrCaption": {
-        "hook": "Opening line under 120 characters",
-        "body": "Main caption 2-4 sentences",
-        "hashtags": ["#Example", "#NicheTag"]
+        "hook": "Opening line up to 180 characters — punchy, specific, scroll-stopping",
+        "body": "5-8 sentences (or short paragraphs). For videos write a mini-script with clear beats: open, main point, example, takeaway, CTA. For images write a value-packed caption that teaches, tells a story, or sparks discussion — ending with a clear call to action.",
+        "hashtags": ["#Example", "#NicheTag", "#Five", "#ToEight", "#Total"]
       }
     }
   ]
@@ -251,6 +253,31 @@ export async function generateContentPlan(userPrompt) {
   }
 }
 
+async function shrinkImage(srcUrl, maxDimension = 768, quality = 0.78) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const longest = Math.max(img.width, img.height) || 1;
+      const scale = Math.min(1, maxDimension / longest);
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      try {
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      } catch (err) {
+        reject(err);
+      }
+    };
+    img.onerror = () => reject(new Error("Failed to load image for resize"));
+    img.src = srcUrl;
+  });
+}
+
 export async function generateMoodboardImage(topic, visualInstructions = "") {
   try {
     const puter = await ensurePuter();
@@ -265,15 +292,24 @@ export async function generateMoodboardImage(topic, visualInstructions = "") {
     const imageUrl = imageEl?.src;
     if (!imageUrl) throw new Error("No image returned");
 
+    const shrunk = await shrinkImage(imageUrl).catch(() => imageUrl);
+
     return {
       topic,
-      imageUrl,
+      imageUrl: shrunk,
       style: "minimalist pastel",
       generatedAt: new Date().toISOString(),
     };
   } catch {
     const result = await aiService.generateMoodboard(topic);
-    if (result?.data) return result.data;
+    const data = result?.data;
+    if (data) {
+      if (data.imageUrl) {
+        const shrunk = await shrinkImage(data.imageUrl).catch(() => data.imageUrl);
+        return { ...data, imageUrl: shrunk };
+      }
+      return data;
+    }
     throw new Error("Moodboard generation failed");
   }
 }
