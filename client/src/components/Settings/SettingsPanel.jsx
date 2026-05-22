@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { Save, Bell, Lock } from "lucide-react";
+import { Save, Bell, Lock, LogOut } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import ConfirmModal from "../common/ConfirmModal";
-import Modal from "../common/Modal";
 
 export default function SettingsPanel() {
     const { user, token, logout, updateUser } = useAuth();
@@ -28,66 +27,6 @@ export default function SettingsPanel() {
     const [saving, setSaving] = useState(false);
     const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
     const [deleteError, setDeleteError] = useState('');
-    const [showPasswordModal, setShowPasswordModal] = useState(false);
-    const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    const [passwordError, setPasswordError] = useState('');
-    const [passwordSuccess, setPasswordSuccess] = useState('');
-    const [changingPassword, setChangingPassword] = useState(false);
-
-    const resetPasswordForm = () => {
-        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        setPasswordError('');
-        setPasswordSuccess('');
-    };
-
-    const handleChangePassword = async () => {
-        setPasswordError('');
-        setPasswordSuccess('');
-
-        if (!passwordForm.currentPassword || !passwordForm.newPassword) {
-            setPasswordError('All fields are required');
-            return;
-        }
-        if (passwordForm.newPassword.length < 6) {
-            setPasswordError('New password must be at least 6 characters');
-            return;
-        }
-        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-            setPasswordError('New password and confirmation do not match');
-            return;
-        }
-
-        setChangingPassword(true);
-        try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-            const res = await fetch(`${apiUrl}/auth/password`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    currentPassword: passwordForm.currentPassword,
-                    newPassword: passwordForm.newPassword,
-                }),
-            });
-            const data = await res.json();
-            if (data.success) {
-                setPasswordSuccess('Password changed successfully');
-                setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                setTimeout(() => {
-                    setShowPasswordModal(false);
-                    resetPasswordForm();
-                }, 1200);
-            } else {
-                setPasswordError(data.error?.message || 'Failed to change password');
-            }
-        } catch {
-            setPasswordError('Network error. Please try again.');
-        } finally {
-            setChangingPassword(false);
-        }
-    };
 
     useEffect(() => {
         if (user) {
@@ -273,13 +212,8 @@ export default function SettingsPanel() {
                         </div>
 
                         <div className="space-y-3">
-                            <button
-                                onClick={() => {
-                                    resetPasswordForm();
-                                    setShowPasswordModal(true);
-                                }}
-                                className="w-full rounded-lg border border-gray-200/60 px-4 py-2 text-xs font-medium text-text-primary-light transition-colors hover:bg-gray-50 dark:border-white/10 dark:text-text-primary-dark dark:hover:bg-white/5"
-                            >
+                            
+                            <button className="w-full rounded-lg border border-gray-200/60 px-4 py-2 text-xs font-medium text-text-primary-light transition-colors hover:bg-gray-50 dark:border-white/10 dark:text-text-primary-dark dark:hover:bg-white/5">
                                 Change Password
                             </button>
                             <button
@@ -287,6 +221,13 @@ export default function SettingsPanel() {
                                 className="w-full rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 dark:border-red-900/30 dark:bg-red-900/10 dark:text-red-400 dark:hover:bg-red-900/20"
                             >
                                 Delete Account
+                            </button>
+                            <button
+                                onClick={logout}
+                                className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200/60 px-4 py-2 text-xs font-medium text-text-primary-light transition-colors hover:bg-gray-50 dark:border-white/10 dark:text-text-primary-dark dark:hover:bg-white/5"
+                            >
+                                <LogOut size={14} />
+                                Logout
                             </button>
                         </div>
                     </div>
@@ -297,79 +238,6 @@ export default function SettingsPanel() {
                     <div className="mx-6 mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-950/30 dark:text-red-400">
                         {deleteError}
                     </div>
-                )}
-
-                {showPasswordModal && (
-                    <Modal
-                        title="Change Password"
-                        onClose={() => {
-                            setShowPasswordModal(false);
-                            resetPasswordForm();
-                        }}
-                    >
-                        <div className="space-y-3">
-                            <div>
-                                <label className="label-style">Current Password</label>
-                                <input
-                                    type="password"
-                                    value={passwordForm.currentPassword}
-                                    onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))}
-                                    className="input-style"
-                                    autoComplete="current-password"
-                                />
-                            </div>
-                            <div>
-                                <label className="label-style">New Password</label>
-                                <input
-                                    type="password"
-                                    value={passwordForm.newPassword}
-                                    onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))}
-                                    className="input-style"
-                                    autoComplete="new-password"
-                                />
-                            </div>
-                            <div>
-                                <label className="label-style">Confirm New Password</label>
-                                <input
-                                    type="password"
-                                    value={passwordForm.confirmPassword}
-                                    onChange={(e) => setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))}
-                                    className="input-style"
-                                    autoComplete="new-password"
-                                />
-                            </div>
-
-                            {passwordError && (
-                                <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-950/30 dark:text-red-400">
-                                    {passwordError}
-                                </div>
-                            )}
-                            {passwordSuccess && (
-                                <div className="rounded-lg bg-green-50 px-3 py-2 text-xs text-green-600 dark:bg-green-950/30 dark:text-green-400">
-                                    {passwordSuccess}
-                                </div>
-                            )}
-
-                            <div className="flex justify-end gap-2 pt-2">
-                                <button
-                                    onClick={() => {
-                                        setShowPasswordModal(false);
-                                        resetPasswordForm();
-                                    }}
-                                    className="rounded-lg border border-gray-200/60 px-4 py-2 text-xs font-medium text-text-secondary-light hover:bg-gray-50 dark:border-white/10 dark:text-text-secondary-dark dark:hover:bg-white/5"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleChangePassword}
-                                    disabled={changingPassword}
-                                    className="btn-primary"
-                                >
-                                    {changingPassword ? 'Saving...' : 'Update Password'}
-                                </button>
-                            </div>
-                        </div>
-                    </Modal>
                 )}
 
                 {showDeleteAccountModal && (
