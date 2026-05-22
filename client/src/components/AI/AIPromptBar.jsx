@@ -12,11 +12,16 @@ export default function AIPromptBar({ onClose }) {
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
 
-    const result = await execute(() => aiService.generatePlan(prompt));
-    if (result?.data) {
-      addPosts(result.data);
-      setPrompt('');
-      onClose();
+    try {
+      const result = await execute(() => aiService.generatePlan(prompt));
+      console.log('AI Result:', result);
+      if (result?.data) {
+        addPosts(result.data);
+        setPrompt('');
+        onClose();
+      }
+    } catch (err) {
+      console.error('AI Error:', err);
     }
   };
 

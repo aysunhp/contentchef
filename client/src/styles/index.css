@@ -35,6 +35,22 @@
     @apply mb-1 block text-[11px] font-semibold uppercase tracking-wider
            text-text-secondary-light dark:text-text-secondary-dark;
   }
+
+  .text-primary-light {
+    color: #1E293B;
+  }
+
+  .dark .text-primary-dark {
+    color: #F3F4F6;
+  }
+
+  .text-secondary-light {
+    color: #64748B;
+  }
+
+  .dark .text-secondary-dark {
+    color: #D1D5DB;
+  }
 }
 
 @layer utilities {

@@ -4,6 +4,7 @@ import { usePosts } from '../../context/PostContext';
 import { postService, aiService } from '../../services/api';
 import { useFetch } from '../../hooks/useFetch';
 import { STATUS_COLORS, FORMAT_LABELS } from '../../constants/theme';
+import ConfirmModal from '../common/ConfirmModal';
 
 const STATUSES = ['draft', 'review', 'published'];
 
@@ -14,8 +15,10 @@ export default function ContentKitchen() {
   const [saved, setSaved] = useState(false);
   const [moodboard, setMoodboard] = useState(null);
   const [moodLoading, setMoodLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
+    console.log('[ContentKitchen] selectedPost changed:', selectedPost);
     if (selectedPost) {
       setDraft({
         status: selectedPost.status,
@@ -26,7 +29,7 @@ export default function ContentKitchen() {
       setSaved(false);
       setMoodboard(null);
     }
-  }, [selectedPost?.id]);
+  }, [selectedPost]);
 
   const handleGenerateMoodboard = async () => {
     setMoodLoading(true);
@@ -56,7 +59,9 @@ export default function ContentKitchen() {
     );
   }
 
-  const set = (field) => (e) => setDraft((prev) => ({ ...prev, [field]: e.target.value }));
+  const set = (field) => (e) => {
+    setDraft((prev) => ({ ...prev, [field]: e.target.value }));
+  };
 
   const handleSave = async () => {
     const updates = {
@@ -76,9 +81,14 @@ export default function ContentKitchen() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Delete this post?')) return;
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
     await execute(() => postService.delete(selectedPost.id));
     deletePost(selectedPost.id);
+    setShowDeleteModal(false);
+    selectPost(null);
   };
 
   const statusStyle = STATUS_COLORS[draft.status] || STATUS_COLORS.draft;
@@ -245,6 +255,15 @@ export default function ContentKitchen() {
           )}
         </button>
       </footer>
+
+      {showDeleteModal && (
+        <ConfirmModal
+          title="Delete Post"
+          message="Are you sure you want to delete this post? This action cannot be undone."
+          onConfirm={confirmDelete}
+          onClose={() => setShowDeleteModal(false)}
+        />
+      )}
     </section>
   );
 }

@@ -13,21 +13,31 @@ const MONTHS = [
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-export default function CalendarBoard() {
+export default function CalendarBoard({ newPostDate: externalNewPostDate, setNewPostDate: externalSetNewPostDate }) {
   const { posts, setPosts, selectPost, isLoading } = usePosts();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showAIBar, setShowAIBar] = useState(false);
-  const [newPostDate, setNewPostDate] = useState(null);
+  const [internalNewPostDate, setInternalNewPostDate] = useState(null);
+
+  const newPostDate = externalNewPostDate !== undefined ? externalNewPostDate : internalNewPostDate;
+  const setNewPostDate = (date) => {
+    if (externalSetNewPostDate) {
+      externalSetNewPostDate(date);
+    } else {
+      setInternalNewPostDate(date);
+    }
+  };
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
   useEffect(() => {
-    postService
-      .getAll()
-      .then((res) => setPosts(res.data))
-      .catch(() => {});
-  }, [setPosts]);
+    const fetchPosts = async () => {
+      const res = await postService.getAll();
+      setPosts(res.data);
+    };
+    fetchPosts();
+  }, []);
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
@@ -89,15 +99,15 @@ export default function CalendarBoard() {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setNewPostDate(new Date().toISOString().split('T')[0])}
-            className="flex items-center gap-1.5 rounded-xl bg-gray-100 px-3 py-2 text-xs font-medium text-text-secondary-light transition-all hover:bg-gray-200 dark:bg-white/5 dark:text-text-secondary-dark dark:hover:bg-white/10"
+            onClick={() => setNewPostDate(new Date().toLocaleDateString('en-CA'))}
+            className="flex items-center gap-1.5 rounded-xl bg-primary-light px-3 py-2 text-xs font-medium text-white transition-all hover:opacity-90 dark:bg-primary-dark dark:text-obsidian"
           >
             <Plus size={14} />
             New Post
           </button>
           <button
             onClick={() => setShowAIBar((prev) => !prev)}
-            className="flex items-center gap-1.5 rounded-xl bg-primary-light/10 px-3 py-2 text-xs font-medium text-primary-light transition-all hover:bg-primary-light/20 dark:bg-primary-dark/10 dark:text-primary-dark dark:hover:bg-primary-dark/20"
+            className="flex items-center gap-1.5 rounded-xl bg-accent-light px-3 py-2 text-xs font-medium text-white transition-all hover:opacity-90 dark:bg-accent-dark dark:text-obsidian"
           >
             <Sparkles size={14} />
             AI Generate

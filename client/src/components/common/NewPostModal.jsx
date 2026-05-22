@@ -14,7 +14,7 @@ export default function NewPostModal({ defaultDate, onClose }) {
   const { isLoading, execute } = useFetch();
 
   const [form, setForm] = useState({
-    date: defaultDate || new Date().toISOString().split('T')[0],
+    date: defaultDate || new Date().toLocaleDateString('en-CA'),
     topic: '',
     category: 'General',
     formatType: 'image',
@@ -43,8 +43,11 @@ export default function NewPostModal({ defaultDate, onClose }) {
       },
     };
 
+    console.log('[NewPostModal] Creating post with payload:', payload);
     const result = await execute(() => postService.create(payload));
+    console.log('[NewPostModal] Server response:', result);
     if (result?.data) {
+      console.log('[NewPostModal] Adding post to context:', result.data);
       addPosts([result.data]);
       onClose();
     }
