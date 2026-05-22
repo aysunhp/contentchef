@@ -20,6 +20,7 @@ export default function NewPostModal({
   platformType,
   platformHint,
   modalTitle = "New Post",
+  defaults = {},
   onClose,
 }) {
   const { addPosts } = usePosts();
@@ -27,12 +28,14 @@ export default function NewPostModal({
 
   const [form, setForm] = useState({
     date: defaultDate || new Date().toLocaleDateString("en-CA"),
-    topic: "",
-    category: "General",
-    formatType: "image",
-    hook: "",
-    body: "",
+    topic: defaults.topic || "",
+    category: defaults.category || "General",
+    formatType: defaults.formatType || "image",
+    hook: defaults.hook || "",
+    body: defaults.body || "",
   });
+
+  const presetHashtags = Array.isArray(defaults.hashtags) ? defaults.hashtags : [];
 
   const set = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -53,6 +56,7 @@ export default function NewPostModal({
         body: form.body,
         hashtags: [],
       },
+      platform: platformType || null,
     };
 
     try {
