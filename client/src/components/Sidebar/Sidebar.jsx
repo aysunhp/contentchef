@@ -4,7 +4,7 @@ import {
   MessageSquare,
   BarChart3,
   Settings,
-  ChefHat,
+  TrendingUp,
   LogOut,
 } from "lucide-react";
 import ThemeToggle from "../common/ThemeToggle";
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { id: "messages", icon: MessageSquare, label: "Messages" },
   { id: "analytics", icon: BarChart3, label: "Analytics" },
   { id: "settings", icon: Settings, label: "Settings" },
+  { id: "trends", icon: TrendingUp, label: "Trend Hijacker" },
 ];
 
 export default function Sidebar({ activeView = "calendar", onNavigate, onCreate, notesCount = 0, user, onLogout }) {
@@ -25,15 +26,11 @@ export default function Sidebar({ activeView = "calendar", onNavigate, onCreate,
     <aside className="flex h-screen w-[72px] flex-col items-center justify-between border-r border-gray-200/60 bg-surface-light py-6 dark:border-white/5 dark:bg-surface-dark">
       {/* Logo */}
       <div className="flex flex-col items-center gap-1">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light/20 dark:bg-primary-dark/20">
-          <ChefHat
-            size={22}
-            className="text-primary-light dark:text-primary-dark"
-          />
-        </div>
-        <span className="mt-1 text-[9px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
-          CHEF
-        </span>
+        <img
+          src="/image.png"
+          alt="ContentChef"
+          className="h-14 w-14 rounded-xl object-contain"
+        />
       </div>
 
       {/* Navigation */}

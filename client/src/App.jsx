@@ -93,7 +93,7 @@ function AppContent() {
               platformType={platformType}
               setPlatformType={setPlatformType}
             />
-            <ContentKitchen />
+            <ContentKitchen platformType={platformType} />
           </>
         )}
       </main>
