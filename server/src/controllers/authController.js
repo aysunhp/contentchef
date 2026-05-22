@@ -138,4 +138,92 @@ const getMe = (req, res, next) => {
   }
 };
 
-module.exports = { register, login, logout, getMe };
+const updateProfile = (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const { name, bio } = req.body;
+
+    const user = User.updateUser(userId, { name, bio });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'User not found' },
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          bio: user.bio || '',
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteAccount = (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const deleted = User.deleteUser(userId);
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: { message: 'User not found' } });
+    }
+
+    res.json({ success: true, data: { message: 'Account deleted' } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const changePassword = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Current and new password are required' },
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'New password must be at least 6 characters' },
+      });
+    }
+
+    const user = User.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'User not found' },
+      });
+    }
+
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) {
+      return res.status(401).json({
+        success: false,
+        error: { message: 'Current password is incorrect' },
+      });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    User.updatePassword(userId, hashed);
+
+    res.json({ success: true, data: { message: 'Password changed successfully' } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { register, login, logout, getMe, updateProfile, deleteAccount, changePassword };

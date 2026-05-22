@@ -4,7 +4,7 @@ import {
   MessageSquare,
   BarChart3,
   Settings,
-  ChefHat,
+  TrendingUp,
   LogOut,
 } from "lucide-react";
 import ThemeToggle from "../common/ThemeToggle";
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { id: "messages", icon: MessageSquare, label: "Messages" },
   { id: "analytics", icon: BarChart3, label: "Analytics" },
   { id: "settings", icon: Settings, label: "Settings" },
+  { id: "trends", icon: TrendingUp, label: "Trend Hijacker" },
 ];
 
 export default function Sidebar({ activeView = "calendar", onNavigate, onCreate, notesCount = 0, user, onLogout }) {
@@ -25,15 +26,11 @@ export default function Sidebar({ activeView = "calendar", onNavigate, onCreate,
     <aside className="flex h-screen w-[72px] flex-col items-center justify-between border-r border-gray-200/60 bg-surface-light py-6 dark:border-white/5 dark:bg-surface-dark">
       {/* Logo */}
       <div className="flex flex-col items-center gap-1">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light/20 dark:bg-primary-dark/20">
-          <ChefHat
-            size={22}
-            className="text-primary-light dark:text-primary-dark"
-          />
-        </div>
-        <span className="mt-1 text-[9px] font-bold tracking-wider text-text-secondary-light dark:text-text-secondary-dark">
-          CHEF
-        </span>
+        <img
+          src="/image.png"
+          alt="ContentChef"
+          className="h-14 w-14 rounded-xl object-contain"
+        />
       </div>
 
       {/* Navigation */}
@@ -75,22 +72,17 @@ export default function Sidebar({ activeView = "calendar", onNavigate, onCreate,
       <div className="flex flex-col items-center gap-3">
         <CreateMenu onSelect={onCreate} />
         <ThemeToggle />
-        {/* Profile Avatar */}
-        <div className="relative group">
-          <button className="h-9 w-9 overflow-hidden rounded-full bg-gradient-to-br from-primary-light to-accent-light ring-2 ring-transparent transition-all hover:ring-primary-light/50 dark:from-primary-dark dark:to-accent-dark dark:hover:ring-primary-dark/50">
-            <span className="flex h-full w-full items-center justify-center text-xs font-semibold text-white">
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
-            </span>
-          </button>
-          {/* Logout Tooltip */}
-          <button
-            onClick={onLogout}
-            className="absolute left-full ml-3 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 dark:bg-white dark:text-gray-900 flex items-center gap-1.5"
-          >
-            <LogOut size={12} />
+        {/* Logout Button */}
+        <button
+          onClick={onLogout}
+          title="Logout"
+          className="group relative flex h-11 w-11 items-center justify-center rounded-xl text-text-secondary-light transition-all duration-200 hover:bg-red-50 hover:text-red-500 dark:text-text-secondary-dark dark:hover:bg-red-900/20 dark:hover:text-red-400"
+        >
+          <LogOut size={20} strokeWidth={1.8} />
+          <span className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 dark:bg-white dark:text-gray-900">
             Logout
-          </button>
-        </div>
+          </span>
+        </button>
       </div>
     </aside>
   );

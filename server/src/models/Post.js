@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const { getCollection } = require('../config/database');
+const { getCollection, saveStore } = require('../config/database');
 
 const VALID_STATUSES = ['draft', 'review', 'published'];
 const VALID_FORMATS = ['video', 'image'];
@@ -12,6 +12,8 @@ const ALLOWED_UPDATE_FIELDS = [
   'visualInstructions',
   'mediaUrl',
   'scriptOrCaption',
+  'platform',
+  'viralityScore',
 ];
 
 const sanitizeScript = (script) => ({
@@ -48,11 +50,14 @@ const createPost = (data) => {
     visualInstructions: data.visualInstructions || '',
     mediaUrl: data.mediaUrl || null,
     scriptOrCaption: sanitizeScript(data.scriptOrCaption),
+    platform: data.platform || null,
+    viralityScore: data.viralityScore || null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
 
   posts.push(post);
+  saveStore();
   return post;
 };
 
@@ -92,6 +97,7 @@ const updatePost = (id, updates) => {
   };
 
   posts[index] = updated;
+  saveStore();
   return updated;
 };
 
@@ -100,6 +106,7 @@ const deletePost = (id) => {
   const index = posts.findIndex((p) => p.id === id);
   if (index === -1) return false;
   posts.splice(index, 1);
+  saveStore();
   return true;
 };
 

@@ -10,10 +10,11 @@ import {
   Loader2,
   Trash2,
   Wand2,
+  RefreshCcw,
 } from "lucide-react";
 import { usePosts } from "../../context/PostContext";
 import { useMedia } from "../../context/MediaContext";
-import { postService, mediaService } from "../../services/api";
+import { postService, mediaService, aiService } from "../../services/api";
 import { generateMoodboardImage } from "../../services/puterAi";
 import { useFetch } from "../../hooks/useFetch";
 import { STATUS_COLORS, FORMAT_LABELS } from "../../constants/theme";
@@ -37,7 +38,7 @@ const readFileAsDataUrl = (file) =>
     reader.readAsDataURL(file);
   });
 
-export default function ContentKitchen() {
+export default function ContentKitchen({ platformType }) {
   const { selectedPost, selectPost, updatePost, deletePost } = usePosts();
   const { addMedia, fetchMedia } = useMedia();
   const { isLoading, error, execute } = useFetch();
@@ -49,6 +50,9 @@ export default function ContentKitchen() {
   const [moodLoading, setMoodLoading] = useState(false);
   const [moodError, setMoodError] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [viralityInfo, setViralityInfo] = useState(null);
+  const [viralityLoading, setViralityLoading] = useState(false);
+  const [viralityError, setViralityError] = useState(null);
 
   useEffect(() => {
     if (selectedPost) {
@@ -62,6 +66,9 @@ export default function ContentKitchen() {
       setPendingImageUrl(selectedPost.mediaUrl || null);
       setSaved(false);
       setMoodError(null);
+      setViralityError(null);
+      setViralityInfo(selectedPost.viralityScore || null);
+      setViralityLoading(false);
     }
   }, [selectedPost]);
 
@@ -78,6 +85,49 @@ export default function ContentKitchen() {
       setMoodError(err.message || "Failed to generate moodboard");
     } finally {
       setMoodLoading(false);
+    }
+  };
+
+  const getPlatformLabel = () => {
+    if (selectedPost.platform) return selectedPost.platform;
+    if (platformType) return platformType;
+    return selectedPost.formatType || 'social media';
+  };
+
+  const handleFetchViralityScore = async (force = false) => {
+    if (!selectedPost) return;
+    if (viralityInfo && !force) return;
+
+    setViralityLoading(true);
+    setViralityError(null);
+
+    try {
+      const response = await aiService.generateViralityScore({
+        hook: draft.hook,
+        body: draft.body,
+        hashtags: draft.hashtags,
+        platform: getPlatformLabel(),
+        category: selectedPost.category,
+      });
+
+      const result = response?.data ?? response;
+      if (!result || typeof result.score !== 'number') {
+        throw new Error('Invalid virality response');
+      }
+
+      setViralityInfo(result);
+      const updatedPost = await postService.update(selectedPost.id, {
+        viralityScore: result,
+      });
+      if (updatedPost?.data) {
+        updatePost(updatedPost.data);
+      } else {
+        updatePost({ ...selectedPost, viralityScore: result });
+      }
+    } catch (err) {
+      setViralityError(err.message || 'Failed to compute virality score');
+    } finally {
+      setViralityLoading(false);
     }
   };
 
@@ -233,6 +283,112 @@ export default function ContentKitchen() {
           </div>
         </div>
 
+        <div className="mb-4 rounded-2xl border border-gray-200/60 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-text-primary-light dark:text-text-primary-dark">
+                Virality Score
+              </p>
+              <p className="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">
+                Analyze hook, body, hashtags, platform and category.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleFetchViralityScore(true)}
+              disabled={viralityLoading}
+              className="btn-accent flex items-center gap-2 text-[11px]"
+            >
+              {viralityLoading ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : viralityInfo ? (
+                <>
+                  <RefreshCcw size={12} /> Re-score
+                </>
+              ) : (
+                'Score it'
+              )}
+            </button>
+          </div>
+
+          {viralityLoading ? (
+            <div className="mt-4 space-y-3">
+              <div className="h-10 rounded-xl bg-gray-200/70 dark:bg-white/10" />
+              <div className="h-8 rounded-xl bg-gray-200/70 dark:bg-white/10" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="h-20 rounded-xl bg-gray-200/70 dark:bg-white/10" />
+                <div className="h-20 rounded-xl bg-gray-200/70 dark:bg-white/10" />
+              </div>
+            </div>
+          ) : viralityError ? (
+            <p className="mt-4 text-xs text-red-500">{viralityError}</p>
+          ) : viralityInfo ? (
+            <div className="mt-4 space-y-4">
+              <div className="flex items-center gap-4">
+                <div
+                  className="relative flex h-24 w-24 items-center justify-center rounded-full"
+                  style={{
+                    background: `conic-gradient(${viralityInfo.score <= 40 ? '#f87171' : viralityInfo.score <= 70 ? '#f59e0b' : '#34d399'} 0 ${Math.max(0, Math.min(100, viralityInfo.score))}%, rgba(229,231,235,0.7) ${Math.max(0, Math.min(100, viralityInfo.score))}% 100%)`,
+                  }}
+                >
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-surface-light text-center text-sm font-bold text-text-primary-light shadow-sm dark:bg-surface-dark dark:text-text-primary-dark">
+                    {viralityInfo.score}
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
+                    {viralityInfo.verdict}
+                  </p>
+                  <p className="mt-2 text-[11px] text-text-secondary-light dark:text-text-secondary-dark">
+                    Platform: {getPlatformLabel()} · Category: {selectedPost.category}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-emerald-200/70 bg-emerald-50/60 p-3 dark:border-emerald-900/30 dark:bg-emerald-900/10">
+                  <p className="mb-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300">Strengths</p>
+                  <div className="space-y-2">
+                    {viralityInfo.strengths?.map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-[12px] text-text-primary-light dark:text-text-primary-dark">
+                        <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">✓</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-red-200/70 bg-red-50/60 p-3 dark:border-red-900/30 dark:bg-red-900/10">
+                  <p className="mb-2 text-xs font-semibold text-red-700 dark:text-red-300">Weaknesses</p>
+                  <div className="space-y-2">
+                    {viralityInfo.weaknesses?.map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-[12px] text-text-primary-light dark:text-text-primary-dark">
+                        <span className="mt-0.5 text-red-600 dark:text-red-400">✕</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-gray-200/60 bg-white p-3 dark:border-white/10 dark:bg-surface-dark/50">
+                <p className="mb-2 text-xs font-semibold text-text-primary-light dark:text-text-primary-dark">Fixes</p>
+                <ol className="space-y-2 text-[12px] text-text-primary-light dark:text-text-primary-dark">
+                  {viralityInfo.fixes?.map((item, idx) => (
+                    <li key={idx} className="flex gap-2">
+                      <span className="font-semibold text-text-secondary-light dark:text-text-secondary-dark">{idx + 1}.</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-4 text-[11px] text-text-secondary-light dark:text-text-secondary-dark">
+              Click Score it to analyze this post and cache the result on the post.
+            </p>
+          )}
+        </div>
+
         <div className="mb-4 grid grid-cols-2 gap-2">
           <div>
             <label className="label-style">Format</label>
@@ -291,7 +447,7 @@ export default function ContentKitchen() {
               <img
                 src={displayImage}
                 alt={selectedPost.topic}
-                className="h-36 w-full object-cover"
+                className="h-40 w-full object-contain bg-gray-100 dark:bg-white/5"
               />
               <div className="flex gap-2 border-t border-gray-200/60 p-2 dark:border-white/10">
                 <button
@@ -348,11 +504,11 @@ export default function ContentKitchen() {
         <div className="space-y-4">
           <div>
             <label className="label-style">Hook</label>
-            <input
-              type="text"
+            <textarea
               value={draft.hook}
               onChange={set("hook")}
-              className="input-style"
+              rows={2}
+              className="input-style resize-none"
               placeholder="Opening line..."
             />
           </div>
