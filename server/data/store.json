@@ -242,9 +242,25 @@
         ]
       },
       "platform": null,
-      "viralityScore": null,
+      "viralityScore": {
+        "score": 87,
+        "verdict": "Strong content with room to sharpen the CTA.",
+        "strengths": [
+          "Clear hook",
+          "Relevant category alignment"
+        ],
+        "weaknesses": [
+          "Hashtags could be more specific",
+          "CTA lacks urgency"
+        ],
+        "fixes": [
+          "Add a concrete action the audience should take",
+          "Use 2-3 niche hashtags instead of generic tags",
+          "Tie the hook more directly to platform expectations"
+        ]
+      },
       "createdAt": "2026-05-22T19:58:06.580Z",
-      "updatedAt": "2026-05-22T19:58:06.580Z"
+      "updatedAt": "2026-05-22T20:04:26.910Z"
     },
     {
       "id": "75a1374e-7c57-4561-bf59-1b78cfc821ac",

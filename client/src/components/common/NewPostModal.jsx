@@ -54,7 +54,7 @@ export default function NewPostModal({
       scriptOrCaption: {
         hook: form.hook,
         body: form.body,
-        hashtags: [],
+        hashtags: presetHashtags,
       },
       platform: platformType || null,
     };
