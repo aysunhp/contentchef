@@ -22,4 +22,14 @@ const generateMoodboard = async (req, res, next) => {
   }
 };
 
-module.exports = { generatePlan, generateMoodboard };
+const generateViralityScore = async (req, res, next) => {
+  try {
+    const { hook, body, hashtags, platform, category } = req.body;
+    const virality = await aiService.generateViralityScore({ hook, body, hashtags, platform, category });
+    res.json({ success: true, data: virality });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { generatePlan, generateMoodboard, generateViralityScore };

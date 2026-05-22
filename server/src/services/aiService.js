@@ -6,7 +6,14 @@ const config = require('../config');
  * Set a real OPENAI_API_KEY in .env to enable live generation (fetch block below).
  */
 
-const SYSTEM_PROMPT = `You are an expert social media strategist and content producer. Generate a structured JSON response array for a content calendar plan. Each item inside the array must contain: { id, date, topic, category, formatType ('video' or 'image'), visualInstructions, scriptOrCaption: { hook, body, hashtags: [] } }. Keep the tone customized to the target audience defined by the user.`;
+const SYSTEM_PROMPT = `You are an expert social media strategist and content producer. Generate a structured JSON response array for a content calendar plan. Each item inside the array must contain: { id, date, topic, category, formatType ('video' or 'image'), visualInstructions, scriptOrCaption: { hook, body, hashtags: [] } }.
+
+Quality bar:
+- hook: punchy and specific, up to 180 characters — use numbers, curiosity gaps, or pattern interrupts.
+- body: 5-8 sentences (or short paragraphs). For videos write a mini-script with clear beats (open → main point → example → takeaway → CTA). For images write a substantive caption that teaches, tells a story, or sparks discussion, ending with a clear call to action. Do not write filler.
+- visualInstructions: 2-3 sentences covering composition, palette, on-screen text, and mood.
+- hashtags: 5-8 niche-relevant tags starting with #, varied per post.
+Customize tone to the target audience defined by the user.`;
 
 const NICHE_PRESETS = {
   english: {
@@ -136,6 +143,76 @@ const buildHashtags = (preset, subjects) => {
   return [...tags].slice(0, 5);
 };
 
+const parseJsonResponse = (content) => {
+  if (!content || typeof content !== 'string') return null;
+  const match = content.match(/\{[\s\S]*\}/);
+  try {
+    if (match) {
+      return JSON.parse(match[0]);
+    }
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+};
+
+const VIRALITY_PROMPT = `You are a social media performance expert. Analyze this content and return ONLY a JSON object with no markdown or explanation outside the JSON:\n\n{\n  "score": <integer 1-100>,\n  "verdict": "<one punchy sentence summary>",\n  "strengths": ["<strength 1>", "<strength 2>"],\n  "weaknesses": ["<weakness 1>", "<weakness 2>"],\n  "fixes": ["<specific fix 1>", "<specific fix 2>", "<specific fix 3>"]\n}\n\nScore based on: hook strength (30pts), emotional resonance (25pts), clarity of CTA (20pts), hashtag relevance (15pts), format fit for platform (10pts). Be brutally honest.`;
+
+const generateViralityScore = async ({ hook, body, hashtags, platform, category }) => {
+  if (config.openai.apiKey && config.openai.apiKey !== 'sk-your-openai-api-key-here' && config.openai.apiKey.trim() !== '') {
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${config.openai.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: VIRALITY_PROMPT },
+            {
+              role: 'user',
+              content: `Content to evaluate:\nHook: "${hook}"\nBody: "${body}"\nHashtags: ${Array.isArray(hashtags) ? hashtags.join(' ') : hashtags}\nPlatform: ${platform || 'social media'}\nCategory: ${category || 'general'}`,
+            },
+          ],
+          max_tokens: 350,
+          temperature: 0.7,
+        }),
+      });
+      const json = await response.json();
+      const content = json?.choices?.[0]?.message?.content;
+      const parsed = parseJsonResponse(content);
+      if (parsed) {
+        return parsed;
+      }
+      throw new Error('Invalid response format from AI');
+    } catch (err) {
+      console.error('Error generating virality score with OpenAI:', err);
+    }
+  }
+
+  // Fallback: mock a score analysis based on simple heuristics.
+  const score = Math.min(
+    100,
+    Math.max(
+      1,
+      50 + (hook?.length || 0) * 0.2 + (body?.length || 0) * 0.05,
+    ),
+  );
+  return {
+    score: Math.round(score),
+    verdict: 'Strong content with room to sharpen the CTA.',
+    strengths: ['Clear hook', 'Relevant category alignment'],
+    weaknesses: ['Hashtags could be more specific', 'CTA lacks urgency'],
+    fixes: [
+      'Add a concrete action the audience should take',
+      'Use 2-3 niche hashtags instead of generic tags',
+      'Tie the hook more directly to platform expectations',
+    ],
+  };
+};
+
 const generatePlan = async (userPrompt) => {
   if (config.openai.apiKey && config.openai.apiKey !== 'sk-your-openai-api-key-here' && config.openai.apiKey.trim() !== '') {
     try {
@@ -242,4 +319,4 @@ const generateMockMoodboard = (topic) => ({
   generatedAt: new Date().toISOString(),
 });
 
-module.exports = { generatePlan, generateMoodboard, SYSTEM_PROMPT };
+module.exports = { generatePlan, generateMoodboard, generateViralityScore, SYSTEM_PROMPT };

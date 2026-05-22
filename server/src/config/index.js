@@ -10,6 +10,10 @@ const config = Object.freeze({
   openai: {
     apiKey: process.env.OPENAI_API_KEY || '',
   },
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY || '',
+    model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
+  },
 });
 
 module.exports = config;

@@ -45,6 +45,15 @@ const updateUser = (id, data) => {
   return users[index];
 };
 
+const updatePassword = (id, hashedPassword) => {
+  const users = getCollection('users');
+  const index = users.findIndex(u => u.id === id);
+  if (index === -1) return false;
+  users[index].password = hashedPassword;
+  saveStore();
+  return true;
+};
+
 const deleteUser = (id) => {
   const users = getCollection('users');
   const index = users.findIndex(u => u.id === id);
@@ -59,5 +68,6 @@ module.exports = {
   getUserByEmail,
   getUserById,
   updateUser,
+  updatePassword,
   deleteUser,
 };
