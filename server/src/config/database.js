@@ -1,11 +1,14 @@
 /**
- * In-memory data store.
- * Replace this module with a real database adapter (MongoDB, PostgreSQL, etc.)
- * when transitioning from mock data to production.
- * config/database.js file
+ * Simple file-backed store for development.
+ * Persists the in-memory `store` to `data/store.json` so data survives restarts.
+ * Replace this module with a real DB adapter (MongoDB, PostgreSQL, etc.) for production.
  */
 
+const fs = require('fs');
+const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+
+const DATA_FILE = path.resolve(__dirname, '../../data/store.json');
 
 const today = new Date();
 const d = (offset) => {
@@ -71,15 +74,38 @@ const store = {
   posts: [...SEED_POSTS],
 };
 
+// Try to load persisted data if available
+try {
+  if (fs.existsSync(DATA_FILE)) {
+    const raw = fs.readFileSync(DATA_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    // Merge loaded data over defaults so SEED_POSTS exist if missing
+    Object.assign(store, parsed);
+  }
+} catch (err) {
+  console.error('Failed to load persisted store:', err.message);
+}
+
+const saveStore = () => {
+  try {
+    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+    fs.writeFileSync(DATA_FILE, JSON.stringify(store, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to save store:', err.message);
+  }
+};
+
 const getCollection = (name) => {
   if (!store[name]) {
     store[name] = [];
+    saveStore();
   }
   return store[name];
 };
 
 const resetCollection = (name) => {
   store[name] = [];
+  saveStore();
 };
 
-module.exports = { store, getCollection, resetCollection };
+module.exports = { store, getCollection, resetCollection, saveStore };

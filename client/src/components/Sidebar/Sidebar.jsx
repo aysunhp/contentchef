@@ -75,22 +75,17 @@ export default function Sidebar({ activeView = "calendar", onNavigate, onCreate,
       <div className="flex flex-col items-center gap-3">
         <CreateMenu onSelect={onCreate} />
         <ThemeToggle />
-        {/* Profile Avatar */}
-        <div className="relative group">
-          <button className="h-9 w-9 overflow-hidden rounded-full bg-gradient-to-br from-primary-light to-accent-light ring-2 ring-transparent transition-all hover:ring-primary-light/50 dark:from-primary-dark dark:to-accent-dark dark:hover:ring-primary-dark/50">
-            <span className="flex h-full w-full items-center justify-center text-xs font-semibold text-white">
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
-            </span>
-          </button>
-          {/* Logout Tooltip */}
-          <button
-            onClick={onLogout}
-            className="absolute left-full ml-3 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 dark:bg-white dark:text-gray-900 flex items-center gap-1.5"
-          >
-            <LogOut size={12} />
+        {/* Logout Button */}
+        <button
+          onClick={onLogout}
+          title="Logout"
+          className="group relative flex h-11 w-11 items-center justify-center rounded-xl text-text-secondary-light transition-all duration-200 hover:bg-red-50 hover:text-red-500 dark:text-text-secondary-dark dark:hover:bg-red-900/20 dark:hover:text-red-400"
+        >
+          <LogOut size={20} strokeWidth={1.8} />
+          <span className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 dark:bg-white dark:text-gray-900">
             Logout
-          </button>
-        </div>
+          </span>
+        </button>
       </div>
     </aside>
   );

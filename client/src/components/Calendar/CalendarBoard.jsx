@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Plus, Sparkles, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Sparkles } from "lucide-react";
 import { usePosts } from "../../context/PostContext";
 import { postService } from "../../services/api";
 import CalendarGrid from "./CalendarGrid";
 import AIPromptBar from "../AI/AIPromptBar";
 import NewPostModal from "../common/NewPostModal";
-import TemplatesModal from "../common/TemplatesModal";
 
 const MONTHS = [
   "January",
@@ -44,7 +43,6 @@ export default function CalendarBoard({
   const { posts, setPosts, selectPost, isLoading, setLoading } = usePosts();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showAIBar, setShowAIBar] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(false);
   const [internalNewPostDate, setInternalNewPostDate] = useState(null);
   const [internalPlatformType, setInternalPlatformType] = useState(null);
   const [loadError, setLoadError] = useState(null);
@@ -162,13 +160,6 @@ export default function CalendarBoard({
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowTemplates(true)}
-            className="btn-accent"
-          >
-            <FileText size={14} />
-            Templates
-          </button>
-          <button
             onClick={() =>
               setNewPostDate(new Date().toLocaleDateString("en-CA"))
             }
@@ -237,17 +228,6 @@ export default function CalendarBoard({
         />
       )}
 
-      {showTemplates && (
-        <TemplatesModal
-          onClose={() => setShowTemplates(false)}
-          onUseTemplate={(template) => {
-            // Populate the new post modal with template content
-            setNewPostDate(new Date().toLocaleDateString("en-CA"));
-            // Note: The template content can be injected via localStorage or context
-            // For now, we'll just open the new post modal
-          }}
-        />
-      )}
     </section>
   );
 }
