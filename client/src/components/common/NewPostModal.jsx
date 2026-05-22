@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import Modal from "./Modal";
 import { postService } from "../../services/api";
 import { usePosts } from "../../context/PostContext";
@@ -15,7 +15,13 @@ const CATEGORIES = [
 ];
 const FORMATS = ["image", "video"];
 
-export default function NewPostModal({ defaultDate, onClose }) {
+export default function NewPostModal({
+  defaultDate,
+  platformType,
+  platformHint,
+  modalTitle = "New Post",
+  onClose,
+}) {
   const { addPosts } = usePosts();
   const { isLoading, error, execute } = useFetch();
 
@@ -61,7 +67,15 @@ export default function NewPostModal({ defaultDate, onClose }) {
   };
 
   return (
-    <Modal title="New Post" onClose={onClose}>
+    <Modal title={modalTitle} onClose={onClose}>
+      {platformHint && (
+        <div className="mb-4 flex items-start gap-2 rounded-lg border border-pastel-sky-border bg-pastel-sky/50 px-3 py-2 dark:border-pastel-sky/30 dark:bg-pastel-sky/10">
+          <AlertCircle size={13} className="mt-0.5 shrink-0 text-pastel-sky-text dark:text-pastel-sky" />
+          <p className="text-[11px] text-pastel-sky-text dark:text-pastel-sky">
+            {platformHint}
+          </p>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="label-style">Date</label>
