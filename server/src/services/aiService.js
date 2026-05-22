@@ -137,30 +137,65 @@ const buildHashtags = (preset, subjects) => {
 };
 
 const generatePlan = async (userPrompt) => {
-  if (config.openai.apiKey && config.openai.apiKey !== 'sk-your-openai-api-key-here') {
-    // Real OpenAI — wire when ready:
-    // const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    //   method: 'POST',
-    //   headers: { Authorization: `Bearer ${config.openai.apiKey}`, 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     model: 'gpt-4o-mini',
-    //     messages: [
-    //       { role: 'system', content: SYSTEM_PROMPT },
-    //       { role: 'user', content: userPrompt },
-    //     ],
-    //     response_format: { type: 'json_object' },
-    //   }),
-    // });
-    // const json = await response.json();
-    // return JSON.parse(json.choices[0].message.content).posts;
+  if (config.openai.apiKey && config.openai.apiKey !== 'sk-your-openai-api-key-here' && config.openai.apiKey.trim() !== '') {
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${config.openai.apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: userPrompt },
+          ],
+          response_format: { type: 'json_object' },
+        }),
+      });
+      const json = await response.json();
+      if (json.choices && json.choices[0] && json.choices[0].message) {
+        const content = JSON.parse(json.choices[0].message.content);
+        return content.posts || content;
+      }
+    } catch (err) {
+      console.error('Error generating plan with OpenAI:', err);
+    }
   }
 
   return generateMockPlan(userPrompt);
 };
 
 const generateMoodboard = async (topic) => {
-  if (config.openai.apiKey && config.openai.apiKey !== 'sk-your-openai-api-key-here') {
-    // Real DALL-E 3 — wire when ready
+  if (config.openai.apiKey && config.openai.apiKey !== 'sk-your-openai-api-key-here' && config.openai.apiKey.trim() !== '') {
+    try {
+      const response = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${config.openai.apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'dall-e-3',
+          prompt: `Social media moodboard hero image for content topic: "${topic}". Style: soft pastel colors, clean minimal layout, professional creator aesthetic, no text overlay, high quality.`,
+          n: 1,
+          size: '1024x1024'
+        }),
+      });
+      const json = await response.json();
+      if (json.data && json.data[0] && json.data[0].url) {
+        return {
+          id: uuidv4(),
+          topic,
+          imageUrl: json.data[0].url,
+          style: 'minimalist pastel',
+          generatedAt: new Date().toISOString(),
+        };
+      }
+    } catch (err) {
+      console.error('Error generating moodboard image with OpenAI:', err);
+    }
   }
 
   return generateMockMoodboard(topic);
