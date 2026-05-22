@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ThemeProvider } from "./context/ThemeContext";
 import { PostProvider, usePosts } from "./context/PostContext";
 import { MediaProvider } from "./context/MediaContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import Sidebar from "./components/Sidebar";
 import CalendarBoard from "./components/Calendar";
 import ContentKitchen from "./components/Kitchen";
@@ -10,6 +11,8 @@ import MessagesPanel from "./components/Messages";
 import AnalyticsPanel from "./components/Analytics";
 import SettingsPanel from "./components/Settings";
 import NewNoteModal from "./components/common/NewNoteModal";
+import LoginModal from "./components/common/LoginModal";
+import RegisterModal from "./components/common/RegisterModal";
 
 function AppContent() {
   const [newPostDate, setNewPostDate] = useState(null);
@@ -17,7 +20,9 @@ function AppContent() {
   const [platformType, setPlatformType] = useState(null);
   const [activeView, setActiveView] = useState("calendar");
   const [notes, setNotes] = useState([]);
+  const [authModal, setAuthModal] = useState('login'); // 'login' or 'register'
   const { selectPost } = usePosts();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const handleCreate = (type) => {
     if (type === "post") {
@@ -38,6 +43,24 @@ function AppContent() {
     setNotes((prev) => [note, ...prev]);
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-cream via-purple-50 to-pink-50 transition-colors duration-300 dark:from-obsidian dark:via-purple-950/20 dark:to-pink-950/20">
+        {authModal === 'register' ? (
+          <RegisterModal
+            onClose={() => setAuthModal('login')}
+            onSwitchToLogin={() => setAuthModal('login')}
+          />
+        ) : (
+          <LoginModal
+            onClose={() => setAuthModal('login')}
+            onSwitchToRegister={() => setAuthModal('register')}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-cream transition-colors duration-300 dark:bg-obsidian">
       <Sidebar
@@ -45,6 +68,8 @@ function AppContent() {
         onNavigate={setActiveView}
         onCreate={handleCreate}
         notesCount={notes.length}
+        user={user}
+        onLogout={logout}
       />
       <main className="flex flex-1 overflow-hidden">
         {activeView === "media" ? (
@@ -86,11 +111,13 @@ function AppContent() {
 export default function App() {
   return (
     <ThemeProvider>
-      <PostProvider>
-        <MediaProvider>
-          <AppContent />
-        </MediaProvider>
-      </PostProvider>
+      <AuthProvider>
+        <PostProvider>
+          <MediaProvider>
+            <AppContent />
+          </MediaProvider>
+        </PostProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
