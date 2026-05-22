@@ -20,16 +20,20 @@ export default function CreateMenu({ onSelect }) {
     return () => window.removeEventListener("mousedown", handler);
   }, []);
 
+  const handleSelect = (type) => {
+    onSelect?.(type);
+    setOpen(false);
+  };
+
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((p) => !p)}
         title="Create"
-        className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 ${
-          open
+        className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 ${open
             ? "border border-pastel-violet-border bg-pastel-violet text-pastel-violet-text"
             : "text-text-secondary-light hover:bg-gray-100 dark:text-text-secondary-dark dark:hover:bg-white/5"
-        }`}
+          }`}
       >
         <Plus
           size={18}
@@ -45,10 +49,7 @@ export default function CreateMenu({ onSelect }) {
           {MENU_ITEMS.map(({ label, icon: Icon, type }) => (
             <button
               key={type}
-              onClick={() => {
-                onSelect?.(type);
-                setOpen(false);
-              }}
+              onClick={() => handleSelect(type)}
               className="flex w-full items-center gap-3 px-4 py-2.5 text-xs text-text-primary-light transition-colors hover:bg-gray-50 dark:text-text-primary-dark dark:hover:bg-white/5"
             >
               <Icon
