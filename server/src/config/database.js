@@ -2,6 +2,7 @@
  * In-memory data store.
  * Replace this module with a real database adapter (MongoDB, PostgreSQL, etc.)
  * when transitioning from mock data to production.
+ * config/database.js file
  */
 
 const { v4: uuidv4 } = require('uuid');

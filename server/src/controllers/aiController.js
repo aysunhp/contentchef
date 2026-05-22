@@ -1,3 +1,4 @@
+// controllers/ airController file
 const aiService = require('../services/aiService');
 const Post = require('../models/Post');
 
